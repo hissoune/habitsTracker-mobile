@@ -1,4 +1,4 @@
-import { View, Text, ImageBackground, StyleSheet, TouchableOpacity, ScrollView, Animated } from "react-native"
+import { View, Text, ImageBackground, StyleSheet, TouchableOpacity, ScrollView, Animated, ActivityIndicator } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { StatusBar } from "expo-status-bar"
 import { LinearGradient } from "expo-linear-gradient"
@@ -7,37 +7,56 @@ import { useRouter } from "expo-router"
 import { ProgressChart } from "react-native-chart-kit"
 import { Dimensions } from "react-native"
 import { useFonts, Poppins_400Regular, Poppins_600SemiBold, Poppins_700Bold } from "@expo-google-fonts/poppins"
+import { useSelector } from "react-redux"
+import { RootState } from "./(redux)/store"
+import { useEffect } from "react"
 
 const screenWidth = Dimensions.get("window").width
 
 const LandingPage = () => {
-  const router = useRouter()
-  const scrollY = new Animated.Value(0)
+  const router = useRouter();
+  const scrollY = new Animated.Value(0);
+  const { inAuth, isLoading } = useSelector((state: RootState) => state.auth);
 
+  // Always call hooks at the top level
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_600SemiBold,
     Poppins_700Bold,
-  })
+  });
+
+  useEffect(() => {
+    if (!isLoading && inAuth) {
+      router.replace('/(tabs)');
+    }
+  }, [isLoading, inAuth]);
+
+  if (!fontsLoaded) {
+    return null; // Safe to return here since fontsLoaded is a hook
+  }
+
+  if (isLoading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  }
 
   const data = {
     labels: ["Succès", "Habitudes", "Défis"],
     data: [0.85, 0.75, 0.65],
-  }
+  };
 
   const navigateToLogin = () => {
     router.push('/auth/login');
-  }
+  };
 
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 100],
     outputRange: [0, 1],
     extrapolate: "clamp",
-  })
-
-  if (!fontsLoaded) {
-    return null
-  }
+  });
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -55,7 +74,9 @@ const LandingPage = () => {
 
         <ScrollView
           contentContainerStyle={styles.container}
-          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+            useNativeDriver: false,
+          })}
           scrollEventThrottle={16}
         >
           <View style={styles.heroSection}>
@@ -98,7 +119,11 @@ const LandingPage = () => {
               title="Suivi des progrès"
               description="Visualisez vos améliorations au fil du temps"
             />
-            <FeatureItem icon="award" title="Défis motivants" description="Participez à des défis pour rester motivé" />
+            <FeatureItem
+              icon="award"
+              title="Défis motivants"
+              description="Participez à des défis pour rester motivé"
+            />
           </View>
 
           <TouchableOpacity style={styles.secondaryButton} onPress={navigateToLogin}>
@@ -107,8 +132,9 @@ const LandingPage = () => {
         </ScrollView>
       </ImageBackground>
     </SafeAreaView>
-  )
-}
+  );
+};
+
 
 const FeatureItem = ({ icon, title, description }:{icon:any,title:string,description:string}) => (
   <View style={styles.featureItem}>
@@ -119,6 +145,8 @@ const FeatureItem = ({ icon, title, description }:{icon:any,title:string,descrip
 )
 
 const styles = StyleSheet.create({
+  loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000" },
+
   safeArea: {
     flex: 1,
     backgroundColor: "#000",
