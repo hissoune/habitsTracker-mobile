@@ -1,50 +1,149 @@
-# Welcome to your Expo app 👋
+# MyHabit - Collaborative Habit-Tracking and Challenge Platform
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+MyHabit is a platform designed to help individuals form better habits through accountability and friendly competition. Users can create habit goals, join challenges, and track their progress, either solo or with a team.
 
-## Get started
+## 📱 MyHabit (Mobile Version - React Native with Expo)
 
-1. Install dependencies
+### 📝 Features
 
-   ```bash
-   npm install
-   ```
+1. **Habit Creation and Tracking**
+   - Set personal habits (e.g., "Drink 2L of water daily" or "Code for 2 hours").
+   - Receive daily reminders via push notifications.
 
-2. Start the app
+2. **Team Challenges**
+   - Create or join group challenges (e.g., "30-day fitness challenge").
+   - Real-time leaderboards to rank participants based on consistency.
 
-   ```bash
-    npx expo start
-   ```
+3. **Accountability Partners**
+   - Pair up with another user for mutual accountability.
+   - In-app chat for sharing progress updates.
 
-In the output, you'll find options to open the app in a
+4. **Gamification**
+   - Earn points, badges, and streaks for completing habits or winning challenges.
+   - Unlock rewards like custom habit themes or exclusive challenges.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+5. **Analytics and Insights**
+   - Weekly and monthly reports showing habit progress and consistency.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+6. **Public and Private Goals**
+   - Set habits as public to inspire others or private for personal tracking.
+   - Share progress with social media integration.
 
-## Get a fresh project
+7. **Multi-Device Syncing**
+   - Sync habit progress across web and mobile.
 
-When you're ready, run:
+8. **Admin Tools**
+   - Moderate public challenges, manage users, and review flagged content.
 
+---
+
+## 🛠️ Tech Stack
+
+### Frontend (Mobile)
+- **React Native**: For building cross-platform mobile applications.
+- **Expo**: For faster development and deployment.
+- **Socket.IO**: For real-time updates on challenge leaderboards.
+- **React Navigation**: For seamless navigation between screens.
+- **Redux Toolkit**: For state management.
+
+### Backend
+- **NestJS**: For building RESTful APIs, WebSockets (real-time updates), and scheduling reminders.
+- **MongoDB**: For storing user data, habits, and challenge progress.
+
+---
+
+## 📦 Installation and Setup
+
+### Prerequisites
+- Node.js (v18 or higher)
+- Expo CLI (v6 or higher)
+- MongoDB (local or remote)
+
+### Step 1: Clone the Repository
 ```bash
-npm run reset-project
+git clone https://github.com/your-username/myhabit-mobile.git
+cd myhabit-mobile
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Step 2: Install Dependencies
+```bash
+npm install
+```
 
-## Learn more
+### Step 3: Set Up Environment Variables
+Create a `.env` file in the root directory and add the following:
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+API_URL=https://your-api-endpoint.com
+SOCKET_URL=https://your-socket-endpoint.com
+EXPO_PUSH_API=https://exp.host/--/api/v2/push/send
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Step 4: Start the Expo Development Server
+```bash
+npx expo start
+```
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## 📲 Running the App
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. **In Emulator**: Select an emulator from the Expo CLI dashboard.
+2. **On Physical Device**: Scan the QR code using the Expo Go app.
+
+---
+
+## 📚 Project Structure
+
+```
+myhabit-mobile/
+├── assets/                # Static assets (icons, images)
+├── src/
+│   ├── components/       # Reusable UI components
+│   ├── screens/          # Application screens
+│   ├── navigation/       # App navigation (React Navigation setup)
+│   ├── store/            # Redux state management
+│   ├── services/         # API and socket integration
+│   └── utils/            # Utility functions
+├── App.js                # Root component
+├── .env                  # Environment variables
+└── package.json          # Dependencies and scripts
+```
+
+---
+
+## ✅ Key Commands
+
+- **Start Development Server**: `npx expo start`
+- **Run Tests**: `npm test`
+- **Build APK (Android)**: `eas build --platform android`
+- **Build IPA (iOS)**: `eas build --platform ios`
+
+---
+
+## 🔍 API Integration
+Ensure your backend is running and properly connected:
+
+1. User Authentication (JWT-based)
+2. Habit Management (Create, Update, Delete)
+3. Challenge Participation and Leaderboard
+4. Real-time Notifications (via Socket.IO)
+
+---
+
+## 📤 Deployment
+
+1. **Expo Publish**: `npx expo publish`
+2. **EAS Build**: `eas build --profile production`
+
+---
+
+## 📧 Support
+For issues or feature requests, please open an [issue](https://github.com/your-username/myhabit-mobile/issues) or contact `support@myhabit.com`.
+
+---
+
+## 📃 License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
