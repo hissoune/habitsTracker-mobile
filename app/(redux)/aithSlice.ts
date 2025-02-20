@@ -1,27 +1,47 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { User } from '@/constants/types';
+import { login, register } from '../(services)/apis/authApi';
+import { ActivityIndicator } from 'react-native';
 
-const initialState = {
+const initialState:{
+    user: User |null,
+    token:string | null,
+    inAuth: boolean,
+    isLoading: boolean,
+    error: string | null,
+} = {
     user: null,
+    token:null,
     inAuth: false,
     isLoading: false,
-    error: null as string | null,
+    error: null,
 };
 
-export const authenticateUser = createAsyncThunk(
-    'auth/authenticateUser',
-    async (userCredentials) => {
-      
+export const registerAction = createAsyncThunk(
+    'auth/register',
+    async (user:User) => {
+      const User = await register(user);
+      return User;
+    }
+);
+export const loginAction= createAsyncThunk(
+    "auth/login",
+    async (Credentials:{email:string,password:string})=>{
+       const response = await login(Credentials);
+       return response;
     }
 );
 
 export const loadUser = createAsyncThunk(
     "auth/loadUser",
     async ()=>{
-        const warehouseman= await AsyncStorage.getItem("user");
+        const user= await AsyncStorage.getItem("user");
+        const token= await AsyncStorage.getItem("token");
            
+           console.log(token);
            
-        return warehouseman ? JSON.parse(warehouseman):null;
+        return user && token ? JSON.parse(user):null;
     }
 )
 
@@ -48,7 +68,37 @@ const authSlice = createSlice({
             .addCase(loadUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = 'user not exist';
-            });
+            })
+            .addCase(registerAction.pending, (state)=>{
+                state.isLoading = true
+            })
+            .addCase(registerAction.fulfilled, (state,action)=>{
+                state.user = action.payload;
+                console.log(state.user);
+                
+                state.isLoading = false;
+            })
+            .addCase(registerAction.rejected, (state,action)=>{
+                state.error = 'registration fail'
+                state.isLoading=false
+            })
+            .addCase(loginAction.pending, (state)=>{
+                state.isLoading = true
+            })
+            .addCase(loginAction.fulfilled, (state,action)=>{
+                state.user = action.payload.user;
+                state.inAuth = true
+                state.token = action.payload.token;
+                AsyncStorage.setItem('user',action.payload.user);
+                AsyncStorage.setItem('token',action.payload.token);
+                state.isLoading = false
+
+            })
+            .addCase(loginAction.rejected, (state)=>{
+                state.error = "login faioled";
+                state.isLoading = false
+            })
+            
     },
 });
 
