@@ -29,6 +29,8 @@ const LandingPage = () => {
     if (!isLoading && inAuth) {
       router.replace('/(tabs)');
     }
+    console.log(inAuth);
+    
   }, [isLoading, inAuth]);
 
   if (!fontsLoaded) {
