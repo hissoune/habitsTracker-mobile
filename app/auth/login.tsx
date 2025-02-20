@@ -1,10 +1,32 @@
+import { User } from '@/constants/types';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { loginAction } from '../(redux)/aithSlice';
 
 
 const LoginScreen = () => {
-      const router = useRouter()
+      const router = useRouter();
+      const dispatch = useAppDispatch();
+  const [form, setForm] = useState({
+      
+        email: '',
+        password: '',
+     
+    });
+    const handleChange = (name: string, value: string) => {
+        setForm({ ...form, [name]: value });
+    };
+  
+  const handleSubmit = async () => {
+    try {
+      await  dispatch(loginAction(form));
+        router.push("/(tabs)");
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+    };
     
     return (
         <View style={styles.container}>
@@ -12,7 +34,10 @@ const LoginScreen = () => {
             <TextInput
                 style={styles.input}
                 placeholder="Email"
+                value={form.email}
                 placeholderTextColor="#aaa"
+                onChangeText={(value) => handleChange('email', value)}
+
                 keyboardType="email-address"
                 autoCapitalize="none"
             />
@@ -20,9 +45,12 @@ const LoginScreen = () => {
                 style={styles.input}
                 placeholder="Password"
                 placeholderTextColor="#aaa"
+                onChangeText={(value) => handleChange('password', value)}
+                value={form.password}
+
                 secureTextEntry
             />
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                 <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
             <View style={styles.linksContainer}>
