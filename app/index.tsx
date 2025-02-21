@@ -34,7 +34,7 @@ const LandingPage = () => {
   }, [isLoading, inAuth]);
 
   if (!fontsLoaded) {
-    return null; // Safe to return here since fontsLoaded is a hook
+    return null;
   }
 
   if (isLoading) {
