@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from '@/constants/types';
 import { login, register } from '../(services)/apis/authApi';
-import { ActivityIndicator } from 'react-native';
 
 const initialState:{
     user: User |null,
@@ -38,9 +37,8 @@ export const loadUser = createAsyncThunk(
     async ()=>{
         const user= await AsyncStorage.getItem("user");
         const token= await AsyncStorage.getItem("token");
-           
-           console.log(token);
-           
+        //add here the call of the function of verify the token 
+        //.....           
         return user && token ? JSON.parse(user):null;
     }
 )
@@ -89,7 +87,7 @@ const authSlice = createSlice({
                 state.user = action.payload.user;
                 state.inAuth = true
                 state.token = action.payload.token;
-                AsyncStorage.setItem('user',action.payload.user);
+                AsyncStorage.setItem('user',JSON.stringify(action.payload.user));
                 AsyncStorage.setItem('token',action.payload.token);
                 state.isLoading = false
 
