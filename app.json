@@ -4,33 +4,34 @@
     "slug": "myHabits-Mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/a_logo_for_habits_tracking_-removebg-preview.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "backgroundColor": "#f0f0f0"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/a_logo_for_habits_tracking_-removebg-preview.png",
+        "backgroundColor": "#f0f0f0"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/a_logo_for_habits_tracking_-removebg-preview.png",
+      "backgroundColor": "#f0f0f0"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/a_logo_for_habits_tracking_-removebg-preview.png",
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#f0f0f0"
         }
       ]
     ],
