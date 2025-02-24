@@ -1,4 +1,6 @@
 import axios from 'axios';
+
+
 export const uploadImageToBackend = async (imageUri: string): Promise<string | null> => {
   const response = await fetch(imageUri);
   const blob = await response.blob();
