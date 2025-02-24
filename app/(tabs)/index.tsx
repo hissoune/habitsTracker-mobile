@@ -93,7 +93,7 @@ const challenges = [
   },
 ];
 
-const COLORS = {
+export const COLORS = {
   primary: "#4ECDC4",
   secondary: "#1e1b4b",
 };
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   headerContainer: { height: 400, overflow: "hidden" },
   headerImage: { width: "100%", height: "100%" },
-  headerImageStyle: { borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
+  headerImageStyle: { borderBottomLeftRadius: 74, borderBottomRightRadius: 24 },
   header: { flex: 1, justifyContent: "flex-end", paddingBottom: 20, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
   statsContainer: { flexDirection: "row", justifyContent: "space-around", paddingHorizontal: 20 },
   statItem: { alignItems: "center" },

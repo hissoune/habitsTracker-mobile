@@ -1,7 +1,10 @@
 "use client"
 
+import { Ionicons } from "@expo/vector-icons"
+import { LinearGradient } from "expo-linear-gradient"
 import { useEffect } from "react"
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Animated, useColorScheme } from "react-native"
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Animated, useColorScheme, TextInput, ImageBackground } from "react-native"
+import { COLORS } from "."
 
 // Sample data based on the provided schema
 const habits = [
@@ -62,7 +65,9 @@ const CircularProgress = ({ progress, size = 70 }:{progress:any,size:number}) =>
   const rotation = animatedValue.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "360deg"],
-  })
+    },
+   
+  )
 
   return (
     <View style={[styles.progressContainer, { width: size, height: size }]}>
@@ -125,13 +130,41 @@ export default function HabitsScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: isDark ? "#000" : "#f5f5f5" }]}>
+       <View style={styles.headerContainer}>
+                <ImageBackground
+                  source={{ uri: "https://i.pinimg.com/736x/bd/19/69/bd1969c36548f390232635d850c67686.jpg" }}
+                  style={styles.headerImage}
+                  imageStyle={styles.headerImageStyle}
+                >
+                  <LinearGradient colors={["transparent", COLORS.secondary]} style={styles.OverLay}>
+                    <View style={styles.statsContainer}>
+                     
+                    </View>
+                  </LinearGradient>
+                </ImageBackground>
+              </View>
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: isDark ? "#fff" : "#000" }]}>My Habits</Text>
+
         <View style={[styles.streakBadge, { backgroundColor: isDark ? "#333" : "#fff" }]}>
           <Text style={styles.streakText}>🔥 12 Day Streak!</Text>
         </View>
       </View>
 
+      <View style={styles.filterContainer}>
+  
+  <TextInput
+    style={styles.searchBar} 
+    placeholder="Search movies and series" 
+    placeholderTextColor="#999" 
+    // onChangeText={(text) => handelSearch(text)}
+  />     
+   </View>
+<View style={styles.filterContainer}>
+  <TouchableOpacity style={styles.filterButton} ><Text style={styles.filterText}>Failed</Text></TouchableOpacity>
+  <TouchableOpacity style={styles.filterButton}><Text style={styles.filterText} >Active</Text></TouchableOpacity>
+  <TouchableOpacity style={styles.filterButton}><Text style={styles.filterText} >Compleeted</Text></TouchableOpacity>
+</View>
       {habits.map((habit) => (
         <HabitCard key={habit._id} habit={habit} />
       ))}
@@ -149,6 +182,16 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical:20,
     flex: 1,
+  },
+  headerContainer: { height: 200, overflow: "hidden" },
+  headerImage: { width: "100%", height: "100%" },
+  headerImageStyle: { borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
+  OverLay: {
+    padding: 16,
+    height:200,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   header: {
     padding: 16,
@@ -249,6 +292,31 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 14,
+    fontWeight: "600",
+  },
+  filterContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  searchBar: {
+    flex: 1,
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    color: "#fff",
+  },
+  filterButton: {
+    padding: 7,
+    borderRadius: 5,
+    backgroundColor: "#ddd",
+  },
+  filterText: {
+    fontSize: 16,
     fontWeight: "600",
   },
 })
