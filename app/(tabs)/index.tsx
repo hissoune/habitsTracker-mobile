@@ -18,6 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Circle } from "react-native-svg";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useMemo, useEffect, useRef } from "react";
+import { COLORS } from "@/constants/Colors";
 
 const habits = [
   { id: 1, name: "Morning Workout", progress: 0.8, streak: 12, icon: "weight-lifter" },
@@ -93,10 +94,7 @@ const challenges = [
   },
 ];
 
-export const COLORS = {
-  primary: "#4ECDC4",
-  secondary: "#1e1b4b",
-};
+
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
