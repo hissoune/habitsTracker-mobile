@@ -23,7 +23,10 @@ export const createHabitAction =createAsyncThunk(
 export const getHabitByIdAction = createAsyncThunk(
     "habits/habit",
     async (habitId:string)=>{
+        
+        
        const habit = await getHabitById(habitId);
+       
        return habit
     }
 );
@@ -88,6 +91,8 @@ const habitSlice = createSlice({
         })
         .addCase(getHabitByIdAction.rejected, (state)=>{
             state.error = 'fzancjk'
+            state.isLoading =false
+
         })
         .addCase(getProgressAction.pending, (state)=>{
             state.isLoading =true

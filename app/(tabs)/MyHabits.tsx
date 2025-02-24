@@ -4,14 +4,14 @@ import { Entypo, FontAwesome, FontAwesome5, Ionicons, MaterialIcons, Octicons } 
 import { LinearGradient } from "expo-linear-gradient"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Animated, useColorScheme, TextInput, ImageBackground, ActivityIndicator } from "react-native"
-import { COLORS } from "."
+
 import { useFocusEffect, useRouter } from "expo-router"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
 import { getAllHabitsAction, getHabitByIdAction } from "../(redux)/hapitSlice"
 import { useSelector } from "react-redux"
 import { RootState } from '../(redux)/store';
 import Svg, { Circle } from "react-native-svg";
-import BirthDayPicker from '@/components/birthDayPicker';
+import { COLORS } from "@/constants/Colors"
 
 
 const getStatusBgColor = (status: string) => {
@@ -35,7 +35,7 @@ const getStatusColor = (status: string) => {
   }
 }
 
-const CircularProgress = ({ progress, size = 70 }:{progress:any,size:number}) => {
+export const CircularProgress = ({ progress, size = 70 ,habitStatus}:{progress:any,size:number,habitStatus:any}) => {
 const animatedValue = useRef(new Animated.Value(0)).current;
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -72,7 +72,7 @@ const animatedValue = useRef(new Animated.Value(0)).current;
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={COLORS.primary}
+          stroke={getStatusColor(habitStatus)}
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={circumference}
@@ -94,8 +94,8 @@ const HabitCard = ({ habit }:{habit:any}) => {
   const dispatch = useAppDispatch();
 
 const habitDetals = async (habitId:string)=>{
- await dispatch(getHabitByIdAction(habitId));
- 
+  dispatch(getHabitByIdAction(habitId));
+ router.push('/details/habitDetails')
 }
  
 
@@ -115,7 +115,7 @@ const habitDetals = async (habitId:string)=>{
           </View>
          
         </View>
-        <CircularProgress progress={habit.progress} size={70} />
+        <CircularProgress progress={habit.progress} size={70} habitStatus={habit.status} />
       </View>
 
 
