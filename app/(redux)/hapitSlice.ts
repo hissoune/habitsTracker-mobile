@@ -1,6 +1,7 @@
-import { Habit } from '@/constants/types';
+import { Habit, progress } from '@/constants/types';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { createHabit, getAllHabits, getHabitById } from '../(services)/apis/hapitApi';
+import { getProgress } from '../(services)/apis/progress.api';
 
 
 export const getAllHabitsAction =createAsyncThunk(
@@ -27,15 +28,25 @@ export const getHabitByIdAction = createAsyncThunk(
     }
 );
 
+export const getProgressAction=createAsyncThunk(
+    "habits/progress",
+    async (habitId:string)=>{
+       const progress = await getProgress(habitId);
+       return progress;
+    }
+);
+
 const initialState:{
     habits:Habit[],
     habit:Habit|null,
+    progress:progress|null
     isLoading:boolean,
     error:string| null
     
 }={
     habits:[],
     habit:null,
+    progress:null,
     isLoading:false,
     error:null
 }
@@ -76,6 +87,16 @@ const habitSlice = createSlice({
             state.isLoading =false
         })
         .addCase(getHabitByIdAction.rejected, (state)=>{
+            state.error = 'fzancjk'
+        })
+        .addCase(getProgressAction.pending, (state)=>{
+            state.isLoading =true
+        })
+        .addCase(getProgressAction.fulfilled, (state,action)=>{
+            state.progress = action.payload
+            state.isLoading =false
+        })
+        .addCase(getProgressAction.rejected, (state)=>{
             state.error = 'fzancjk'
         })
         
