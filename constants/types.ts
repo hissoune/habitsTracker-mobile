@@ -24,6 +24,7 @@ export enum Status {
 
 
 export type Habit=  {
+    _id?:string
     userId?: string;
     progress?: number;
     title: string;
@@ -33,4 +34,12 @@ export type Habit=  {
     status: Status;
     createdAt: Date;
     updatedAt: Date;
+}
+export type progress ={
+userId?:string,
+habitId?:string,
+date?:Date,
+streack?:number,
+status?:boolean
+
 }
