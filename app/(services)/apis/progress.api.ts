@@ -9,7 +9,7 @@ export const getProgress = async (habitId:string)=>{
 }
 
 export const completProgress = async (progressId:string)=>{
-    const response = await axiosInstance.patch(`habits-service/progress/compleet/${progressId}`);
+    const response = await axiosInstance.patch(`habits-service/progress/compleet/${progressId}`,{});
    
    return response.data
 }

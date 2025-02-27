@@ -5,9 +5,7 @@ import axiosInstance from "../Client";
 export const getAllHabits=async()=>{
 
   
-  const response =await axiosInstance.get('habits-service/habits/all');
-  console.log(response);
-  
+  const response =await axiosInstance.get('habits-service/habits/all');  
   return response.data
 }
 
@@ -22,7 +20,8 @@ export const getHabitById=async (habitId:string)=>{
 }
 
 export const reactiveHabit = async (habitId:string) =>{
-    const response = await axiosInstance.patch(`habits-service/habits/${habitId}`);
+    const response = await axiosInstance.patch(`habits-service/habits/${habitId}`,{});
+
     
     return response.data
 }

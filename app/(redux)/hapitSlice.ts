@@ -7,9 +7,7 @@ import { getProgress, completProgress } from '../(services)/apis/progress.api';
 export const getAllHabitsAction =createAsyncThunk(
     "habits/all",
     async ()=>{
-     const habits = await getAllHabits();
-     console.log(habits);
-     
+     const habits = await getAllHabits();     
      return habits
     }
 );
@@ -25,8 +23,6 @@ export const createHabitAction =createAsyncThunk(
 export const getHabitByIdAction = createAsyncThunk(
     "habits/habit",
     async (habitId:string)=>{
-        
-        
        const habit = await getHabitById(habitId);
        
        return habit
@@ -44,7 +40,7 @@ export const getProgressAction=createAsyncThunk(
 export const reactiveHabitAction =createAsyncThunk(
     "habits/reactive",
     async (habitId:string)=>{
-      const habit = await reactiveHabit(habitId);   
+      const habit = await reactiveHabit(habitId);         
       return habit;
     }
 );
@@ -74,7 +70,18 @@ const initialState:{
 const habitSlice = createSlice({
     name: 'habits',
     initialState,
-    reducers:{},
+    reducers:{
+        updateScheduledHabits:(state,action)=>{
+            if (action.payload.habit) {
+             state.habit = action.payload.habit;
+             state.habits = state.habits.map((habit)=>
+                habit._id == action.payload.habit._id ?action.payload.habit:habit
+             )
+            }
+            state.progress = action.payload.progress;
+             
+        }
+    },
     extraReducers:(builder)=>{
         builder
         .addCase(getAllHabitsAction.pending, (state)=>{
@@ -149,6 +156,6 @@ const habitSlice = createSlice({
     }
     
 });
-
+export  const {updateScheduledHabits} = habitSlice.actions
 export const habitReducer = habitSlice.reducer
 
