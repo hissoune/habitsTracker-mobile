@@ -3,16 +3,26 @@ import axiosInstance from "../Client";
 
 
 export const getAllHabits=async()=>{
-  const response =await axiosInstance.get('/habits/all');
+
+  
+  const response =await axiosInstance.get('habits-service/habits/all');
+  console.log(response);
+  
   return response.data
 }
 
 export const createHabit = async(habit:Habit)=>{
-  const response = await axiosInstance.post('/habits',habit);
+  const response = await axiosInstance.post('habits-service/habits',habit);
   return response.data
 }
 
 export const getHabitById=async (habitId:string)=>{
-    const response = await axiosInstance.get(`/habits/${habitId}`);
+    const response = await axiosInstance.get(`habits-service/habits/${habitId}`);
+    return response.data
+}
+
+export const reactiveHabit = async (habitId:string) =>{
+    const response = await axiosInstance.patch(`habits-service/habits/${habitId}`);
+    
     return response.data
 }
