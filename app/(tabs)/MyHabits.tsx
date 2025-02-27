@@ -91,11 +91,9 @@ const HabitCard = ({ habit }:{habit:any}) => {
   const colorScheme = useColorScheme()
   const isDark = colorScheme === "dark"
   const router = useRouter();
-  const dispatch = useAppDispatch();
 
 const habitDetals = async (habitId:string)=>{
-  dispatch(getHabitByIdAction(habitId));
- router.push('/details/habitDetails')
+ router.push(`/details/habitDetails?habitId=${habitId}`)
 }
  
 
