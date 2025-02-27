@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   View,
   Text,
@@ -18,14 +18,16 @@ import { COLORS } from "@/constants/Colors"
 import { LineChart } from "react-native-chart-kit"
 import { LinearGradient } from "expo-linear-gradient"
 import { CircularProgress } from "../(tabs)/MyHabits"
-import { useRouter } from "expo-router"
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
-import { getProgressAction } from "../(redux)/hapitSlice"
-import { progress } from '../../constants/types';
+import {
+  completProgressAction,
+  getHabitByIdAction,
+  getProgressAction,
+  reactiveHabitAction,
+} from "../(redux)/hapitSlice"
 
 const { width } = Dimensions.get("window")
-
-
 
 const StatCard = ({ title, value, icon, color }: { title: string; value: number; icon: any; color: string }) => {
   const colorScheme = useColorScheme()
@@ -34,7 +36,7 @@ const StatCard = ({ title, value, icon, color }: { title: string; value: number;
   return (
     <View style={[styles.statCard, isDark && styles.statCardDark]}>
       <LinearGradient
-        colors={isDark ? [`${color}20`, `${color}05`] : [`${color}15`, `${color}05`]}
+        colors={isDark ? [`${color}20`, `05`] : [`${color}15`, `${color}05`]}
         style={styles.statGradient}
       >
         <View style={[styles.iconContainer, { backgroundColor: isDark ? `${color}30` : `${color}20` }]}>{icon}</View>
@@ -46,42 +48,99 @@ const StatCard = ({ title, value, icon, color }: { title: string; value: number;
 }
 
 const HabitDetails = () => {
-  const { habit ,isLoading,progress } = useSelector((state: RootState) => state.habit)
+  const { habitId } = useLocalSearchParams()
+  const { habit, isLoading, progress } = useSelector((state: RootState) => state.habit)
   const colorScheme = useColorScheme()
   const isDark = colorScheme === "dark"
-   const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch()
+  const isMounted = useRef(true)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const router = useRouter()
 
-   useEffect(()=>{
-    if (habit) {
-            if (habit._id) {
-              dispatch(getProgressAction(habit._id))
-            }
-
+  useEffect(() => {
+    return () => {
+      isMounted.current = false
     }
-   },[habit])
-  if (!habit || isLoading) {
+  }, [])
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchHabitDetails = async () => {
+        if (!habitId || typeof habitId !== "string") {
+          router.back();
+          return;
+        }
+
+        if (isInitialLoad && isMounted.current) {
+          try {
+            await dispatch(getHabitByIdAction(habitId));
+            setIsInitialLoad(false);
+          } catch (error) {
+            console.error("Failed to fetch habit:", error);
+            router.back();
+          }
+        }
+      };
+
+      fetchHabitDetails();
+
+      return () => {
+        isMounted.current = false; 
+      };
+    }, [habitId, dispatch, isInitialLoad, router,habit])
+  );
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      if (!habit?._id || !isMounted.current) return
+
+      try {
+        await dispatch(getProgressAction(habit._id))
+      } catch (error) {
+        console.error("Failed to fetch progress:", error)
+      }
+    }
+
+    fetchProgress()
+  }, [habit?._id, dispatch])
+
+  if (isLoading) {
     return (
       <View style={[styles.loadingContainer, isDark && styles.loadingContainerDark]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={[styles.loadingText, isDark && styles.loadingTextDark]}>Loading habit details...</Text>
       </View>
     )
   }
-  const repeatsArray = Array.from({ length: habit.repeats }, (_, i) => i + 1);
 
-console.log(progress);
+  if (!habit) {
+    return (
+      <View style={[styles.errorContainer, isDark && styles.errorContainerDark]}>
+        <MaterialIcons name="error-outline" size={48} color={COLORS.primary} />
+        <Text style={[styles.errorText, isDark && styles.errorTextDark]}>Failed to load habit details</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => setIsInitialLoad(true)}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
+  const repeatsArray = Array.from({ length: habit.repeats }, (_, i) => i + 1)
 
   const chartData = {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
         data: [65, 80, 75, 90, 85, 95, 88],
+        color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
+        strokeWidth: 2,
       },
     ],
   }
 
   const getStatusBgColor = (status: string) => {
     if (isDark) {
-      switch (status) {
+      switch (status.toLowerCase()) {
         case "active":
           return "rgba(99, 102, 241, 0.2)"
         case "completed":
@@ -92,12 +151,12 @@ console.log(progress);
           return "rgba(107, 114, 128, 0.2)"
       }
     }
-    switch (status) {
-      case "Active":
+    switch (status.toLowerCase()) {
+      case "active":
         return "#e2e8ff"
-      case "Completed":
+      case "completed":
         return "#dcfce7"
-      case "Failed":
+      case "failed":
         return "#fee2e2"
       default:
         return "#f3f4f6"
@@ -105,7 +164,7 @@ console.log(progress);
   }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "active":
         return "#6366f1"
       case "completed":
@@ -117,10 +176,50 @@ console.log(progress);
     }
   }
 
+  const handleReactiveHabit = async () => {
+   
+
+    try {
+      if (habit._id) {
+        await dispatch(reactiveHabitAction(habit._id))
+      }
+    } catch (error) {
+      console.error("Failed to reactive habit:", error)
+    }
+  }
+
+  const handleCompleteProgress = async () => {
+  
+    try {
+      if (progress?._id) {
+        await dispatch(completProgressAction(progress._id))
+      }
+    } catch (error) {
+      console.error("Failed to complete progress:", error)
+    }
+  }
+
+  const getFrequencyText = (frequency: string) => {
+    switch (frequency.toLowerCase()) {
+      case "daily":
+        return "Day"
+      case "weekly":
+        return "Week"
+      case "monthly":
+        return "Month"
+      default:
+        return "Period"
+    }
+  }
+
   return (
-    <ScrollView style={[styles.container, isDark && styles.containerDark]} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={[styles.container, isDark && styles.containerDark]}
+      showsVerticalScrollIndicator={false}
+      bounces={true}
+    >
       <LinearGradient
-        colors={isDark ? [COLORS.primary + "30", "#000"] : [COLORS.primary + "20", "#fff"]}
+        colors={isDark ? [`${COLORS.primary}30`, "#000"] : [`${COLORS.primary}20`, "#fff"]}
         style={styles.headerGradient}
       >
         <View style={styles.header}>
@@ -142,13 +241,21 @@ console.log(progress);
         <View style={styles.progressSection}>
           <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Current Progress</Text>
           <View style={styles.progressContent}>
-            <CircularProgress progress={habit.progress} size={80} habitStatus={habit.status}/>
+            <CircularProgress progress={habit.progress || 0} size={80} habitStatus={habit.status} />
             <View style={styles.progressInfo}>
               <Text style={[styles.progressPercentage, isDark && styles.progressPercentageDark]}>
-                {Math.round(habit.progress?  habit.progress* 100:0)}% Complete
+                {Math.round((habit.progress || 0) * 100)}% Complete
               </Text>
-              <Text style={[styles.progressSubtext, isDark && styles.progressSubtextDark,{color:habit.status =='failed'?'red':COLORS.primary}]}>
-               {habit.status =='failed'? "You can Allways Try Again":" Keep going, you're doing great!"}
+              <Text
+                style={[
+                  styles.progressSubtext,
+                  isDark && styles.progressSubtextDark,
+                  { color: habit.status === "failed" ? "#ef4444" : COLORS.primary },
+                ]}
+              >
+                {habit.status === "failed"
+                  ? "Don't give up! You can always try again"
+                  : "Keep going, you're doing great!"}
               </Text>
             </View>
           </View>
@@ -177,7 +284,7 @@ console.log(progress);
       </View>
 
       <View style={[styles.chartSection, isDark && styles.chartSectionDark]}>
-        <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Weekly Progress</Text>
+        <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>{habit.frequency} Progress</Text>
         <LineChart
           data={chartData}
           width={width - 32}
@@ -187,7 +294,7 @@ console.log(progress);
             backgroundGradientFrom: isDark ? "#000" : "#fff",
             backgroundGradientTo: isDark ? "#000" : "#fff",
             decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(${COLORS.primary}, ${opacity})`,
+            color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
             labelColor: () => (isDark ? "#fff" : "#1f2937"),
             style: {
               borderRadius: 16,
@@ -200,6 +307,8 @@ console.log(progress);
           }}
           bezier
           style={styles.chart}
+          withInnerLines={false}
+          withOuterLines={false}
         />
       </View>
 
@@ -208,7 +317,7 @@ console.log(progress);
           <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Current Streak</Text>
           <View style={[styles.streakBadge, isDark && styles.streakBadgeDark]}>
             <Feather name="zap" size={20} color="#f59e0b" />
-            <Text style={styles.streakText}>7 Days</Text>
+            <Text style={styles.streakText}>{progress?.streack || 0} Days</Text>
           </View>
         </View>
         <View style={styles.streakDays}>
@@ -218,28 +327,33 @@ console.log(progress);
               style={[
                 styles.dayDot,
                 {
-                  backgroundColor: day <= (progress?.streack??0 ) ? COLORS.primary : isDark ? "#333" : "#e5e7eb",
+                  backgroundColor:
+                    progress?.streack && day <= progress.streack ? COLORS.primary : isDark ? "#333" : "#e5e7eb",
                 },
               ]}
             />
           ))}
         </View>
       </View>
-    {progress ? (
-      progress.status ? (
-        <TouchableOpacity disabled style={[styles.actionButton, isDark && styles.actionButtonDark]} activeOpacity={0.7}>
-          <Text style={styles.actionButtonText}>You Done it  this {habit.frequency == 'daily' && 'Day' ||habit.frequency == 'weekly' && 'Week'||habit.frequency == 'monthly' && 'month' } </Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity style={[styles.actionButton, isDark && styles.actionButtonDark]} activeOpacity={0.7}>
-          <Text style={styles.actionButtonText}>Mark as Complete</Text>
-        </TouchableOpacity>
-      )
-    ) : ( <TouchableOpacity style={[styles.actionButton, isDark && styles.actionButtonDark]} activeOpacity={0.7}>
-        <Text style={styles.actionButtonText}>Try Again</Text>
+
+      <TouchableOpacity
+        style={[
+          styles.actionButton,
+          isDark && styles.actionButtonDark,
+          (!progress || progress.status) && styles.actionButtonDisabled,
+        ]}
+        onPress={progress ?()=> handleCompleteProgress() :()=> handleReactiveHabit()}
+         disabled={progress?.status}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.actionButtonText}>
+          {progress
+            ? progress.status
+              ? `Completed for this ${getFrequencyText(habit.frequency)}!`
+              : "Mark as Complete"
+            :habit.status == 'failed'? "Try Again":habit.status == 'completed'?"Try Again":'starting soon'}
+        </Text>
       </TouchableOpacity>
-    )}
-    
     </ScrollView>
   )
 }
@@ -257,9 +371,48 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fff",
+    gap: 16,
   },
   loadingContainerDark: {
     backgroundColor: "#000",
+  },
+  loadingText: {
+    color: "#6b7280",
+    fontSize: 16,
+  },
+  loadingTextDark: {
+    color: "#9ca3af",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    gap: 16,
+    padding: 20,
+  },
+  errorContainerDark: {
+    backgroundColor: "#000",
+  },
+  errorText: {
+    color: "#1f2937",
+    fontSize: 18,
+    textAlign: "center",
+  },
+  errorTextDark: {
+    color: "#fff",
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   headerGradient: {
     padding: 20,
@@ -279,6 +432,8 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     color: "#1f2937",
+    flex: 1,
+    marginRight: 16,
   },
   titleDark: {
     color: "#fff",
@@ -313,17 +468,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 16,
   },
-  progressCircleContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
   progressInfo: {
     flex: 1,
-  },
-  progressText: {
-    position: "absolute",
-    fontSize: 16,
-    fontWeight: "bold",
   },
   progressPercentage: {
     fontSize: 20,
@@ -353,10 +499,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 16,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
@@ -398,10 +541,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     margin: 16,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
@@ -420,10 +560,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     margin: 16,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
@@ -470,16 +607,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     shadowColor: COLORS.primary,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 6,
   },
   actionButtonDark: {
     shadowOpacity: 0.5,
+  },
+  actionButtonDisabled: {
+    opacity: 0.6,
   },
   actionButtonText: {
     color: "#fff",

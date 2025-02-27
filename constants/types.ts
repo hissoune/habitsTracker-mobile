@@ -39,6 +39,7 @@ export type Habit=  {
     updatedAt: Date;
 }
 export type progress ={
+_id:string
 userId?:string,
 habitId?:string,
 date?:Date,
