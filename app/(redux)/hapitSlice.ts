@@ -1,13 +1,15 @@
 import { Habit, progress } from '@/constants/types';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { createHabit, getAllHabits, getHabitById } from '../(services)/apis/hapitApi';
-import { getProgress } from '../(services)/apis/progress.api';
+import { createHabit, getAllHabits, getHabitById, reactiveHabit } from '../(services)/apis/hapitApi';
+import { getProgress, completProgress } from '../(services)/apis/progress.api';
 
 
 export const getAllHabitsAction =createAsyncThunk(
     "habits/all",
     async ()=>{
      const habits = await getAllHabits();
+     console.log(habits);
+     
      return habits
     }
 );
@@ -36,6 +38,21 @@ export const getProgressAction=createAsyncThunk(
     async (habitId:string)=>{
        const progress = await getProgress(habitId);
        return progress;
+    }
+);
+
+export const reactiveHabitAction =createAsyncThunk(
+    "habits/reactive",
+    async (habitId:string)=>{
+      const habit = await reactiveHabit(habitId);   
+      return habit;
+    }
+);
+export const completProgressAction=createAsyncThunk(
+    "habits/complet",
+    async (progressId:string)=>{
+        const progress = await completProgress(progressId);
+        return progress;
     }
 );
 
@@ -103,6 +120,30 @@ const habitSlice = createSlice({
         })
         .addCase(getProgressAction.rejected, (state)=>{
             state.error = 'fzancjk'
+        })
+        .addCase(reactiveHabitAction.pending, (state)=>{
+            state.isLoading =true
+        })
+        .addCase(reactiveHabitAction.fulfilled, (state,action)=>{
+            state.habit = action.payload
+            state.isLoading =false
+        })
+        .addCase(reactiveHabitAction.rejected, (state)=>{
+            state.error = 'fzancjk'
+            state.isLoading =false
+
+        })
+        .addCase(completProgressAction.pending, (state)=>{
+            state.isLoading =true
+        })
+        .addCase(completProgressAction.fulfilled, (state,action)=>{
+            state.progress = action.payload
+            state.isLoading =false
+        })
+        .addCase(completProgressAction.rejected, (state)=>{
+            state.error = 'fzancjk'
+            state.isLoading =false
+
         })
         
     }
