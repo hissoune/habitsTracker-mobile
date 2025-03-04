@@ -49,7 +49,9 @@ const StatCard = ({ title, value, icon, color }: { title: string; value: number;
 
 const HabitDetails = () => {
   const { habitId } = useLocalSearchParams()
-  const { habit, isLoading, progress } = useSelector((state: RootState) => state.habit)
+  const { habits, isLoading, progress } = useSelector((state: RootState) => state.habit)
+  const [habit, setHabit] = useState(habits.find((h) => h._id === habitId))
+
   const colorScheme = useColorScheme()
   const isDark = colorScheme === "dark"
   const dispatch = useAppDispatch()
@@ -63,6 +65,12 @@ const HabitDetails = () => {
     }
   }, [])
 
+  useEffect(()=> {
+    const currentHabit = habits.find((h) => h._id === habitId);
+    if(currentHabit)
+      setHabit({...currentHabit})
+  },[habits])
+
   useFocusEffect(
     useCallback(() => {
       const fetchHabitDetails = async () => {
@@ -73,7 +81,7 @@ const HabitDetails = () => {
 
         if (isInitialLoad && isMounted.current) {
           try {
-            await dispatch(getHabitByIdAction(habitId));
+            dispatch(await getHabitByIdAction(habitId))
             setIsInitialLoad(false);
           } catch (error) {
             console.error("Failed to fetch habit:", error);
@@ -87,7 +95,7 @@ const HabitDetails = () => {
       return () => {
         isMounted.current = false; 
       };
-    }, [habitId, dispatch, isInitialLoad, router,habit])
+    }, [dispatch, isInitialLoad, router, habit])
   );
 
   useEffect(() => {
@@ -317,7 +325,7 @@ const HabitDetails = () => {
           <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Current Streak</Text>
           <View style={[styles.streakBadge, isDark && styles.streakBadgeDark]}>
             <Feather name="zap" size={20} color="#f59e0b" />
-            <Text style={styles.streakText}>{progress?.streack || 0} Days</Text>
+            <Text style={styles.streakText}>{progress?.streak || habit.sucsess} Days</Text>
           </View>
         </View>
         <View style={styles.streakDays}>
@@ -328,7 +336,7 @@ const HabitDetails = () => {
                 styles.dayDot,
                 {
                   backgroundColor:
-                    progress?.streack && day <= progress.streack ? COLORS.primary : isDark ? "#333" : "#e5e7eb",
+                  progress?  (progress?.streak && day <= progress.streak ? COLORS.primary:isDark?"#333":'#f59e0b') : habit.sucsess ? COLORS.primary  : "#333",
                 },
               ]}
             />
@@ -548,6 +556,7 @@ const styles = StyleSheet.create({
   },
   chartSectionDark: {
     backgroundColor: "#1a1a1a",
+    
   },
   chart: {
     marginVertical: 8,

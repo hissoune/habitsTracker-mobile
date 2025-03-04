@@ -1,6 +1,7 @@
 
 
 export type User ={
+    _id?:string
     name:string,
     email:string,
     password:string,
@@ -43,7 +44,7 @@ _id:string
 userId?:string,
 habitId?:string,
 date?:Date,
-streack?:number,
+streak?:number,
 status?:boolean
 
 }

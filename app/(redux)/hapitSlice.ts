@@ -29,6 +29,7 @@ export const getHabitByIdAction = createAsyncThunk(
     }
 );
 
+
 export const getProgressAction=createAsyncThunk(
     "habits/progress",
     async (habitId:string)=>{
@@ -78,7 +79,13 @@ const habitSlice = createSlice({
                 habit._id == action.payload.habit._id ?action.payload.habit:habit
              )
             }
-            state.progress = action.payload.progress;
+            if (action.payload.progress ) {
+                state.progress = action.payload.progress;
+
+            }
+            if (action.payload.progress.progressStatus == 'expired') {
+                state.progress = null;
+            }
              
         }
     },
