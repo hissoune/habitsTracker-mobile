@@ -33,9 +33,9 @@ export type Habit=  {
     frequency: Frequency;
     reminderTime?: Date;
     repeats:number;
-    sucsess:number;
-    fails:number;
-    status: Status;
+    sucsess?:number;
+    fails?:number;
+    status?: Status;
     createdAt: Date;
     updatedAt: Date;
 }
