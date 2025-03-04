@@ -47,7 +47,14 @@ const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        
+        logoutAction:  (state)=>{
+           state.user = null ;
+           state.token = null;
+           AsyncStorage.removeItem('user') 
+           AsyncStorage.removeItem('token') 
+           state.inAuth = false;
+         
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -100,6 +107,6 @@ const authSlice = createSlice({
             
     },
 });
-
+export const {logoutAction} = authSlice.actions
 export const authReducer =authSlice.reducer ;
 
