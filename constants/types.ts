@@ -33,18 +33,29 @@ export type Habit=  {
     frequency: Frequency;
     reminderTime?: Date;
     repeats:number;
-    sucsess:number;
-    fails:number;
-    status: Status;
+    sucsess?:number;
+    fails?:number;
+    status?: Status;
     createdAt: Date;
     updatedAt: Date;
 }
-export type progress ={
-_id:string
-userId?:string,
-habitId?:string,
-date?:Date,
-streak?:number,
-status?:boolean
+    export type progress ={
+    _id:string
+    userId?:string,
+    habitId?:string,
+    date?:Date,
+    streak?:number,
+    status?:boolean
 
-}
+    }
+
+    export type chalenge = {
+        _id?:string,
+        title: string;
+        description: string;
+        image?: string;
+        creator?: string;
+        participants?: { userId: string, progress: number }[];
+        endDate: string;
+        startDate: string;
+    }

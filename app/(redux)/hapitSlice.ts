@@ -79,13 +79,11 @@ const habitSlice = createSlice({
                 habit._id == action.payload.habit._id ?action.payload.habit:habit
              )
             }
-            if (action.payload.progress ) {
+            if (action.payload.progress && action.payload.progress.progressStatus != 'expired' ) {
                 state.progress = action.payload.progress;
 
             }
-            if (action.payload.progress.progressStatus == 'expired') {
-                state.progress = null;
-            }
+            
              
         }
     },

@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { authReducer } from './aithSlice';
 import { habitReducer } from './hapitSlice';
+import { chalengesReducer } from './chalengesSlice';
 
 const store = configureStore({
     reducer: {
         auth: authReducer,
-        habit:habitReducer
+        habit:habitReducer,
+        chalenge:chalengesReducer
     }
 });
 

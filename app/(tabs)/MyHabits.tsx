@@ -23,10 +23,11 @@ import type { RootState } from "../(redux)/store"
 import Svg, { Circle } from "react-native-svg"
 import { COLORS } from "@/constants/Colors"
 import { Habit } from "@/constants/types"
+import HabitCreationModal from "@/components/habitCreation"
 
 const getStatusBgColor = (status: string, isDark: boolean) => {
   if (isDark) {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase() ?? "") {
       case "active":
         return "rgba(99, 102, 241, 0.2)"
       case "completed":
@@ -49,8 +50,8 @@ const getStatusBgColor = (status: string, isDark: boolean) => {
   }
 }
 
-const getStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
+const getStatusColor = (status: string | undefined) => {
+  switch (status?.toLowerCase()) {
     case "active":
       return "#6366f1"
     case "completed":
@@ -140,7 +141,7 @@ const HabitCard = ({ habit }:{habit:Habit}) => {
         <View style={styles.titleContainer}>
           <View style={styles.titleRow}>
             <Text style={[styles.title, isDark && styles.titleDark]}>{habit.title}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusBgColor(habit.status, isDark) }]}>
+            <View style={[styles.statusBadge, { backgroundColor: getStatusBgColor(habit.status ?? "", isDark) }]}>
               <Text style={[styles.statusText, { color: getStatusColor(habit.status) }]}>{habit.status}</Text>
             </View>
           </View>
@@ -231,6 +232,7 @@ export default function HabitsScreen() {
   const isDark = colorScheme === "dark"
   const dispatch = useAppDispatch()
   const { habits, isLoading } = useSelector((state: RootState) => state.habit)
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -278,9 +280,10 @@ export default function HabitsScreen() {
             placeholder="Search habits..."
             placeholderTextColor={isDark ? "#9ca3af" : "#6b7280"}
           />
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton}  onPress={() => setIsModalVisible(true)}>
             <Octicons name="diff-added" size={24} color="#fff" />
           </TouchableOpacity>
+          <HabitCreationModal visible={isModalVisible} onClose={() => setIsModalVisible(false)}/>
         </View>
 
         <FilterButtons />
