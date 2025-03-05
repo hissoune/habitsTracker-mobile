@@ -233,8 +233,8 @@ const HabitDetails = () => {
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <Text style={[styles.title, isDark && styles.titleDark]}>{habit.title}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusBgColor(habit.status) }]}>
-              <Text style={[styles.statusText, { color: getStatusColor(habit.status) }]}>{habit.status}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: habit.status ? getStatusBgColor(habit.status) : "#f3f4f6" }]}>
+              <Text style={[styles.statusText, { color: getStatusColor(habit.status || "unknown") }]}>{habit.status || "unknown"}</Text>
             </View>
           </View>
 
@@ -279,13 +279,13 @@ const HabitDetails = () => {
         />
         <StatCard
           title="Successful"
-          value={habit.sucsess}
+          value={habit.sucsess ?? 0}
           icon={<Entypo name="check" size={24} color="#22c55e" />}
           color="#22c55e"
         />
         <StatCard
           title="Failed"
-          value={habit.fails}
+          value={habit.fails ?? 0}
           icon={<FontAwesome5 name="times" size={24} color="#ef4444" />}
           color="#ef4444"
         />
