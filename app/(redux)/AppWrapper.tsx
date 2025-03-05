@@ -13,7 +13,9 @@ const AppWrapper = () => {
   const router = useRouter()
   const dispatch = useAppDispatch();
   const socket = io("http://192.168.9.30:3001");
-const {user}=useSelector((state:RootState)=>state.auth)
+
+  const {user}=useSelector((state:RootState)=>state.auth)
+  
   useEffect(() => {
     socket.on('habitUpdated', (data) => {
      if (data.habit.userId == user?._id) {
