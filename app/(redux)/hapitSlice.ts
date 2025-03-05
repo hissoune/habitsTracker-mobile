@@ -2,6 +2,7 @@ import { Habit, progress } from '@/constants/types';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { createHabit, getAllHabits, getHabitById, reactiveHabit } from '../(services)/apis/hapitApi';
 import { getProgress, completProgress } from '../(services)/apis/progress.api';
+import { Frequency } from '../../constants/types';
 
 
 export const getAllHabitsAction =createAsyncThunk(
@@ -85,7 +86,8 @@ const habitSlice = createSlice({
             }
             
              
-        }
+        },
+       
     },
     extraReducers:(builder)=>{
         builder
