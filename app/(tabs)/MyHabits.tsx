@@ -17,7 +17,7 @@ import {
 } from "react-native"
 import { useFocusEffect, useRouter } from "expo-router"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
-import { getAllHabitsAction } from "../(redux)/hapitSlice"
+import {  getAllHabitsAction } from "../(redux)/hapitSlice"
 import { useSelector } from "react-redux"
 import type { RootState } from "../(redux)/store"
 import Svg, { Circle } from "react-native-svg"
@@ -176,12 +176,25 @@ const HabitCard = ({ habit }:{habit:Habit}) => {
   )
 }
 
-const FilterButtons = () => {
-  const [activeFilter, setActiveFilter] = useState("active")
-  const colorScheme = useColorScheme()
-  const isDark = colorScheme === "dark"
+const FilterButtons = ({ setFiltredHabits, habits }: { setFiltredHabits: any, habits: Habit[] }) => {
+  const [activeFilter, setActiveFilter] = useState("all");
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
+  const handelFilter = (status: string) => {
+    if (status === "all") {
+      setFiltredHabits(habits);
+    } else {
+      setFiltredHabits(habits.filter((habit) => habit.status === status));
+    }
+  };
 
   const filters = [
+    {
+      label: "All",
+      value: "all",
+      icon: <MaterialIcons name="error" size={20} color={getStatusColor("all")} />,
+    },
     {
       label: "Failed",
       value: "failed",
@@ -197,10 +210,14 @@ const FilterButtons = () => {
       value: "completed",
       icon: <MaterialIcons name="check-circle" size={20} color={getStatusColor("completed")} />,
     },
-  ]
+  ];
 
   return (
-    <View style={styles.filterContainer}>
+    <ScrollView
+      horizontal 
+      showsHorizontalScrollIndicator={false} 
+      contentContainerStyle={styles.filterContainer} 
+    >
       {filters.map((filter) => (
         <TouchableOpacity
           key={filter.value}
@@ -209,7 +226,10 @@ const FilterButtons = () => {
             isDark && styles.filterButtonDark,
             activeFilter === filter.value && styles.activeButton,
           ]}
-          onPress={() => setActiveFilter(filter.value)}
+          onPress={() => {
+            handelFilter(filter.value);
+            setActiveFilter(filter.value);
+          }}
         >
           {filter.icon}
           <Text
@@ -223,9 +243,9 @@ const FilterButtons = () => {
           </Text>
         </TouchableOpacity>
       ))}
-    </View>
-  )
-}
+    </ScrollView>
+  );
+};
 
 export default function HabitsScreen() {
   const colorScheme = useColorScheme()
@@ -233,13 +253,26 @@ export default function HabitsScreen() {
   const dispatch = useAppDispatch()
   const { habits, isLoading } = useSelector((state: RootState) => state.habit)
   const [isModalVisible, setIsModalVisible] = useState(false);
-
+  const [filtredHabits,setFiltredHabits] = useState<Habit[]>([])
+  const [searchQuery, setSearchQuery] = useState("");
   useFocusEffect(
     useCallback(() => {
       dispatch(getAllHabitsAction())
+      setFiltredHabits(habits);
     }, [dispatch]),
   )
-
+ 
+  const handelsearch = (query: string) => {
+    setSearchQuery(query); 
+    if (query === "") {
+      setFiltredHabits(habits); 
+    } else {
+      const filtered = habits.filter((habit) =>
+        habit.title.toLowerCase().includes(query.toLowerCase())
+      );
+      setFiltredHabits(filtered);
+    }
+  };
   if (isLoading) {
     return (
       <View style={[styles.loaderContainer, isDark && styles.loaderContainerDark]}>
@@ -279,6 +312,8 @@ export default function HabitsScreen() {
             style={[styles.searchBar, isDark && styles.searchBarDark]}
             placeholder="Search habits..."
             placeholderTextColor={isDark ? "#9ca3af" : "#6b7280"}
+            value={searchQuery}
+            onChangeText={handelsearch}
           />
           <TouchableOpacity style={styles.addButton}  onPress={() => setIsModalVisible(true)}>
             <Octicons name="diff-added" size={24} color="#fff" />
@@ -286,9 +321,9 @@ export default function HabitsScreen() {
           <HabitCreationModal visible={isModalVisible} onClose={() => setIsModalVisible(false)}/>
         </View>
 
-        <FilterButtons />
+        <FilterButtons setFiltredHabits={setFiltredHabits} habits={habits} />
 
-        {habits.map((habit) => (
+        {filtredHabits.map((habit) => (
           <HabitCard key={habit._id} habit={habit} />
         ))}
       </LinearGradient>
@@ -398,22 +433,25 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     flexDirection: "row",
+    gap: 8, 
     justifyContent: "space-around",
     marginBottom: 20,
   },
   filterButton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    justifyContent: "center", 
+    gap: 6,
+    paddingHorizontal: 12, 
+    paddingVertical: 5, 
+    borderRadius: 20, 
     backgroundColor: "#fff",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowRadius: 4, 
     elevation: 3,
+    minWidth: 80,
   },
   filterButtonDark: {
     backgroundColor: "#1a1a1a",
