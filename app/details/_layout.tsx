@@ -28,7 +28,9 @@ export default function DetailsLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack/>
+      <Stack>
+        <Stack.Screen name='chalengeDetails' options={{ headerShown: false, }}/>
+      </Stack>
        
   
       <StatusBar style="auto" />
