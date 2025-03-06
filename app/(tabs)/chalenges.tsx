@@ -1,79 +1,98 @@
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { AntDesign } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect } from 'react';
-import { ActivityIndicator, FlatList, Image, ImageBackground, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSelector } from 'react-redux';
-import { RootState } from '../(redux)/store';
-import { getAllChalengesAction } from '../(redux)/chalengesSlice';
+"use client"
 
-const COLORS = {
-  primary: '#6200ee', 
-  secondary: '#03dac6', 
-  background: '#121212', 
-  text: '#ffffff', 
-  cardBackground: '#1e1e1e', 
-};
+import { useAppDispatch } from "@/hooks/useAppDispatch"
+import { AntDesign } from "@expo/vector-icons"
+import { LinearGradient } from "expo-linear-gradient"
+import { useEffect } from "react"
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  ImageBackground,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
+} from "react-native"
+import { useSelector } from "react-redux"
+import type { RootState } from "../(redux)/store"
+import { getAllChalengesAction } from "../(redux)/chalengesSlice"
+import { useRouter } from "expo-router"
+import { Colors, COLORS } from "@/constants/Colors"
+import { replaceIp } from "../helpers/replaceIp"
 
 const Chalenges = () => {
- const dispatch = useAppDispatch()
- const {chalenges,isLoading}=useSelector((state:RootState)=>state.chalenge); 
-  const isDark = true; 
-  const stats = { challenges: 10, participants: 150, likes: 1200 }; 
-  useEffect(()=>{
-      dispatch(getAllChalengesAction())
-  },[chalenges,dispatch])
+  const dispatch = useAppDispatch()
+  const { chalenges, isLoading } = useSelector((state: RootState) => state.chalenge)
+  const router = useRouter()
 
+  const colorScheme = useColorScheme() || "light"
+  const colors = Colors[colorScheme]
+
+  const stats = { challenges: 10, participants: 150, likes: 1200 }
+
+  useEffect(() => {
+    dispatch(getAllChalengesAction())
+  }, [dispatch])
+
+  const handelChalengeDetails = (challengeId: string) => {
+    router.push(`/details/chalengeDetails?challengeId=${challengeId}`)
+  }
 
   const renderChallenge = ({ item }: { item: any }) => (
-    <View style={[styles.card, { backgroundColor: COLORS.cardBackground }]}>
+    <TouchableOpacity
+      onPress={() => handelChalengeDetails(item._id)}
+      style={[styles.card, { backgroundColor: colorScheme === "dark" ? "rgba(255, 255, 255, 0.1)" : "#fff" }]}
+    >
       <View style={styles.challengeHeader}>
-        <Image source={{ uri: item.creator.avatar }} style={styles.avatar} />
-        <TouchableOpacity
-          style={styles.joinButton}
-          activeOpacity={0.8}
-        >
-          <AntDesign name="deleteusergroup" size={24} color={COLORS.text} />
+        <Image source={{ uri: replaceIp(item.creator.image || "",process.env.EXPO_PUBLIC_REPLACE || "") }} style={styles.avatar} />
+        <TouchableOpacity style={[styles.joinButton, { backgroundColor: COLORS.primary }]} activeOpacity={0.8}>
+          <AntDesign name="deleteusergroup" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
-      <Text style={styles.creator}>By: {item.creator.name}</Text>
-      <Text style={styles.participants}>
+      <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
+      <Text style={[styles.description, { color: colors.text, opacity: 0.8 }]}>{item.description}</Text>
+      <Text style={[styles.creator, { color: colors.text, opacity: 0.6 }]}>By: {item.creator.name}</Text>
+      <Text style={[styles.participants, { color: colors.text, opacity: 0.6 }]}>
         Participants:{" "}
         {item.participants.length > 0
-          ? `${item.participants[item.participants.length - 1].name} + ${
-              item.participants.length - 1
-            }`
+          ? `${item.participants[item.participants.length - 1].userDetails.name} ${(item.participants.length - 1) != 0 ? "+" + (item.participants.length - 1) : ""}`
           : "No participants yet"}
       </Text>
-      <Text style={styles.stats}>
+      <Text style={[styles.stats, { color: colors.text, opacity: 0.6 }]}>
         👍 {item.likes} | 👎 {item.dislikes} | ⭐ {item.favorites}
       </Text>
-    </View>
-  );
+    </TouchableOpacity>
+  )
 
   if (isLoading) {
-      <View style={[styles.loaderContainer, isDark && styles.loaderContainerDark]}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-          </View>
+    return (
+      <View style={[styles.loaderContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    )
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: COLORS.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView>
         <View style={styles.headerContainer}>
           <ImageBackground
-            source={{ uri: 'https://i.pinimg.com/736x/da/44/34/da4434b3365332fcfb13be7325553cf7.jpg' }}
+            source={{ uri: "https://i.pinimg.com/736x/da/44/34/da4434b3365332fcfb13be7325553cf7.jpg" }}
             style={styles.headerImage}
             imageStyle={styles.headerImageStyle}
           >
-            <LinearGradient colors={['transparent', COLORS.secondary]} style={styles.header}>
+            <LinearGradient colors={["transparent", COLORS.primary]} style={styles.header}>
               <View style={styles.statsContainer}>
                 {Object.entries(stats).map(([key, value]) => (
                   <View key={key} style={styles.statItem}>
-                    <Text style={styles.statNumber}>{value}</Text>
-                    <Text style={styles.statLabel}>{key.charAt(0).toUpperCase() + key.slice(1)}</Text>
+                    <Text style={[styles.statNumber, { color: "#fff" }]}>{value}</Text>
+                    <Text style={[styles.statLabel, { color: "#fff", opacity: 0.8 }]}>
+                      {key.charAt(0).toUpperCase() + key.slice(1)}
+                    </Text>
                   </View>
                 ))}
               </View>
@@ -82,31 +101,30 @@ const Chalenges = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: COLORS.text }]}>Today's Challenges</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Today's Challenges</Text>
           <FlatList
             data={chalenges}
             renderItem={renderChallenge}
-            keyExtractor={(item) => item._id ? item._id.toString() : ""}
+            keyExtractor={(item) => (item._id ? item._id.toString() : "")}
             scrollEnabled={false}
           />
         </View>
       </ScrollView>
     </SafeAreaView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   headerContainer: {
     height: 200,
   },
   headerImage: {
     flex: 1,
-    resizeMode: 'cover',
-    justifyContent: 'flex-end',
+    resizeMode: "cover",
+    justifyContent: "flex-end",
   },
   headerImageStyle: {
     borderRadius: 10,
@@ -115,10 +133,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  loaderContainerDark: {
-    backgroundColor: "#000",
   },
   header: {
     padding: 16,
@@ -126,46 +140,42 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
   },
   statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginTop: 16,
   },
   statItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   statNumber: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.text,
+    fontWeight: "bold",
   },
   statLabel: {
     fontSize: 14,
-    color: COLORS.text,
-    opacity: 0.8,
   },
   section: {
     padding: 16,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
   },
   card: {
-    backgroundColor: COLORS.cardBackground,
     borderRadius: 10,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
   },
   challengeHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
   avatar: {
@@ -174,39 +184,30 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   joinButton: {
-    backgroundColor: COLORS.primary,
     padding: 8,
     borderRadius: 20,
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
+    fontWeight: "bold",
     marginBottom: 8,
   },
   description: {
     fontSize: 14,
-    color: COLORS.text,
-    opacity: 0.8,
     marginBottom: 8,
   },
   creator: {
     fontSize: 12,
-    color: COLORS.text,
-    opacity: 0.6,
     marginBottom: 8,
   },
   participants: {
     fontSize: 12,
-    color: COLORS.text,
-    opacity: 0.6,
     marginBottom: 8,
   },
   stats: {
     fontSize: 12,
-    color: COLORS.text,
-    opacity: 0.6,
   },
-});
+})
 
-export default Chalenges;
+export default Chalenges
+
