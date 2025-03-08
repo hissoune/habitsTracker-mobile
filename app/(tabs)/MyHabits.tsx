@@ -176,18 +176,11 @@ const HabitCard = ({ habit }:{habit:Habit}) => {
   )
 }
 
-const FilterButtons = ({ setFiltredHabits, habits }: { setFiltredHabits: any, habits: Habit[] }) => {
-  const [activeFilter, setActiveFilter] = useState("all");
+const FilterButtons = ({activeFilter, setActiveFilter }: {activeFilter:string, setActiveFilter: any}) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
-  const handelFilter = (status: string) => {
-    if (status === "all") {
-      setFiltredHabits(habits);
-    } else {
-      setFiltredHabits(habits.filter((habit) => habit.status === status));
-    }
-  };
+ 
 
   const filters = [
     {
@@ -227,7 +220,6 @@ const FilterButtons = ({ setFiltredHabits, habits }: { setFiltredHabits: any, ha
             activeFilter === filter.value && styles.activeButton,
           ]}
           onPress={() => {
-            handelFilter(filter.value);
             setActiveFilter(filter.value);
           }}
         >
@@ -253,14 +245,26 @@ export default function HabitsScreen() {
   const dispatch = useAppDispatch()
   const { habits, isLoading } = useSelector((state: RootState) => state.habit)
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("all");
+
   const [filtredHabits,setFiltredHabits] = useState<Habit[]>([])
   const [searchQuery, setSearchQuery] = useState("");
   useFocusEffect(
     useCallback(() => {
       dispatch(getAllHabitsAction())
-      setFiltredHabits(habits);
+
+      
     }, [dispatch]),
   )
+
+  useEffect(()=>{
+    if (habits && activeFilter == "all") {
+      setFiltredHabits(habits);
+    }else {
+      setFiltredHabits(habits.filter((habit)=> habit.status == activeFilter));
+
+    }
+  },[habits,activeFilter])
  
   const handelsearch = (query: string) => {
     setSearchQuery(query); 
@@ -321,7 +325,7 @@ export default function HabitsScreen() {
           <HabitCreationModal visible={isModalVisible} onClose={() => setIsModalVisible(false)}/>
         </View>
 
-        <FilterButtons setFiltredHabits={setFiltredHabits} habits={habits} />
+        <FilterButtons setActiveFilter={setActiveFilter} activeFilter={activeFilter} />
 
         {filtredHabits.map((habit) => (
           <HabitCard key={habit._id} habit={habit} />

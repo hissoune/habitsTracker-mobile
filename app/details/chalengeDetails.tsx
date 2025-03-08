@@ -13,7 +13,7 @@ import {
   ScrollView,
   useColorScheme,
 } from "react-native"
-import { FontAwesome, MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons"
+import { FontAwesome, MaterialIcons, Ionicons, AntDesign, Feather, MaterialCommunityIcons } from "@expo/vector-icons"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSelector } from "react-redux"
 import type { RootState } from "../(redux)/store"
@@ -24,6 +24,7 @@ import { joinChalengeAction } from "../(redux)/chalengesSlice"
 import { chalenge } from "@/constants/types"
 import { Image } from "react-native"
 import { replaceIp } from "../helpers/replaceIp"
+import React from "react"
 
 
 
@@ -36,6 +37,8 @@ const ChallengeDetails = () => {
   const [challenge, setChallenge] = useState<chalenge | undefined>(chalenges.find((ch) => ch._id === challengeId))
   const [isParticipant, setIsParticipant] = useState(false)
   const router = useRouter()
+  const userProgress = 0 // Define userProgress with an initial value
+  const [completedToday, setCompletedToday] = useState(false)
   const dispatch = useAppDispatch()
   
   const colorScheme = useColorScheme() || 'light'
@@ -72,6 +75,12 @@ const ChallengeDetails = () => {
     await dispatch(joinChalengeAction(chalengeId))
     console.log("Joining challenge:", challengeId)
     setIsParticipant(true)
+  }
+
+  const handleMarkAsCompleted = () => {
+    // Implement the logic to mark the challenge as completed
+    setCompletedToday(true)
+    console.log("Marked as completed")
   }
 
   const calculateDaysLeft = () => {
@@ -152,6 +161,22 @@ const ChallengeDetails = () => {
                 <MaterialIcons name="timer" size={20} color={colors.icon} />
                 <Text style={[styles.statText, { color: colors.text }]}>{daysLeft} Days Left</Text>
               </View>
+              
+            </View>
+            <View style={styles.statsContainer}>
+              <View style={[styles.statItem, { 
+                backgroundColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)' 
+              }]}>
+                <FontAwesome name="calendar" size={20} color={colors.icon} />
+                <Text style={[styles.statText, { color: colors.text }]}>{challenge.frequency.charAt(0).toUpperCase() + challenge.frequency.slice(1)} </Text>
+                        </View>
+              <View style={[styles.statItem, { 
+                backgroundColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)' 
+              }]}>
+                <Ionicons name="repeat" size={24} color={COLORS.primary} />
+                <Text style={[styles.statText, { color: colors.text }]}>{challenge.repeats}</Text>
+              </View>
+           
             </View>
           </View>
 
@@ -207,6 +232,80 @@ const ChallengeDetails = () => {
               </View>
             )}
           </View>
+
+          {isParticipant && (
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: colorScheme === "dark" ? "rgba(255, 255, 255, 0.1)" : "#fff",
+                  borderColor: colorScheme === "dark" ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.05)",
+                },
+              ]}
+            >
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Your Progress</Text>
+
+              <View style={styles.progressSection}>
+                <View style={styles.progressHeader}>
+                  <Text style={[styles.progressText, { color: colors.text }]}>{userProgress}% Complete</Text>
+                  <Text style={[styles.progressText, { color: colorScheme === "dark" ? "#ccc" : "#777" }]}>
+                    {Math.round(challenge.repeats * (userProgress / 100))}/{challenge.repeats} completed
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.progressBarBackground,
+                    {
+                      backgroundColor: colorScheme === "dark" ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)",
+                      height: 12,
+                      marginVertical: 10,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.progressBar,
+                      {
+                        width: `${userProgress}%`,
+                        backgroundColor: userProgress > 75 ? "#4CAF50" : userProgress > 40 ? "#FFC107" : COLORS.primary,
+                        height: "100%",
+                      },
+                    ]}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.markCompletedButton, completedToday ? styles.markCompletedButtonDisabled : null]}
+                  onPress={handleMarkAsCompleted}
+                  disabled={completedToday}
+                >
+                  {completedToday ? (
+                    <>
+                      <MaterialCommunityIcons name="check-circle" size={24} color="#fff" />
+                      <Text style={styles.markCompletedButtonText}>Completed Today</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Feather name="check-circle" size={24} color="#fff" />
+                      <Text style={styles.markCompletedButtonText}>
+                        Mark {challenge.frequency === "daily" ? "Today" : "This Week"} as Completed
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.progressTips}>
+                  <MaterialIcons name="lightbulb-outline" size={20} color={COLORS.primary} />
+                  <Text style={[styles.progressTipsText, { color: colorScheme === "dark" ? "#ccc" : "#777" }]}>
+                    {completedToday
+                      ? `Great job! Come back ${challenge.frequency === "daily" ? "tomorrow" : "next week"} to continue your progress.`
+                      : `Complete your ${challenge.frequency} task to increase your progress.`}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
 
           {!isParticipant && (
             <Animated.View style={[styles.joinButtonContainer, { transform: [{ scale: scaleAnim }] }]}>
@@ -292,6 +391,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
+    marginTop: 20,
     borderWidth: 1,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -442,6 +542,50 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderColor:"#000",
     borderWidth:1,
+  },
+  progressSection: {
+    marginTop: 20,
+  },
+  progressTips: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  progressHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  markCompletedButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 10,
+  },
+  progressTipsText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  progressText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  markCompletedButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 10,
+    borderRadius: 30,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 8,
+  },
+  markCompletedButtonDisabled: {
+    backgroundColor: "#ccc",
   },
 })
 

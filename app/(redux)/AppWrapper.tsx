@@ -12,24 +12,27 @@ const AppWrapper = () => {
 
   const router = useRouter()
   const dispatch = useAppDispatch();
-  const socket = io("http://192.168.9.30:3001");
-
+  const habitssocket = io(process.env.EXPO_PUBLIC_HABITS);
+  const chalengesSocket = io(process.env.EXPO_PUBLIC_CHALENGES)
   const {user}=useSelector((state:RootState)=>state.auth)
   
   useEffect(() => {
-    socket.on('habitUpdated', (data) => {
+    habitssocket.on('habitUpdated', (data) => {
      if (data.habit.userId == user?._id) {
       dispatch(updateScheduledHabits(data))
 
      }
     
     });
+    chalengesSocket.on('chalengeUpdated', (data)=>{
+       
+    });
     
     if (!user) {
       router.push('/')
     }
     return () => {
-      socket.close()
+      habitssocket.close()
     }
 
     

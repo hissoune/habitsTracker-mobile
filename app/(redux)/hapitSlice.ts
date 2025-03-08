@@ -74,16 +74,12 @@ const habitSlice = createSlice({
     initialState,
     reducers:{
         updateScheduledHabits:(state,action)=>{
-            if (action.payload.habit) {
-             state.habit = action.payload.habit;
+            
              state.habits = state.habits.map((habit)=>
                 habit._id == action.payload.habit._id ?action.payload.habit:habit
              )
-            }
-            if (action.payload.progress && action.payload.progress.progressStatus != 'expired' ) {
-                state.progress = action.payload.progress;
-
-            }
+          
+          
             
              
         },
@@ -126,13 +122,14 @@ const habitSlice = createSlice({
 
         })
         .addCase(getProgressAction.pending, (state)=>{
-            state.isLoading =true
+            state.isLoading =false
         })
         .addCase(getProgressAction.fulfilled, (state,action)=>{
             state.progress = action.payload
             state.isLoading =false
         })
         .addCase(getProgressAction.rejected, (state)=>{
+            state.progress =null
             state.error = 'fzancjk'
         })
         .addCase(reactiveHabitAction.pending, (state)=>{
