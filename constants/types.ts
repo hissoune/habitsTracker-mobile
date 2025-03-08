@@ -56,6 +56,8 @@ export type Habit=  {
         image?: string;
         creator?: string;
         participants?: { userId: string, progress: number,userDetails?:User }[];
+        frequency:string,
+        repeats:number;
         endDate: string;
         startDate: string;
     }
