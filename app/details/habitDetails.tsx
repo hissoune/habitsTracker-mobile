@@ -22,7 +22,6 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
 import {
   completProgressAction,
-  getHabitByIdAction,
   getProgressAction,
   reactiveHabitAction,
 } from "../(redux)/hapitSlice"
@@ -51,7 +50,6 @@ const HabitDetails = () => {
   const { habitId } = useLocalSearchParams()
   const { habits, isLoading, progress } = useSelector((state: RootState) => state.habit)
   const [habit, setHabit] = useState(habits.find((h) => h._id === habitId))
-
   const colorScheme = useColorScheme()
   const isDark = colorScheme === "dark"
   const dispatch = useAppDispatch()
@@ -71,46 +69,16 @@ const HabitDetails = () => {
       setHabit({...currentHabit})
   },[habits])
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchHabitDetails = async () => {
-        if (!habitId || typeof habitId !== "string") {
-          router.back();
-          return;
-        }
-
-        if (isInitialLoad && isMounted.current) {
-          try {
-            dispatch(await getHabitByIdAction(habitId))
-            setIsInitialLoad(false);
-          } catch (error) {
-            console.error("Failed to fetch habit:", error);
-            router.back();
-          }
-        }
-      };
-
-      fetchHabitDetails();
-
-      return () => {
-        isMounted.current = false; 
-      };
-    }, [dispatch, isInitialLoad, router, habit])
-  );
+ 
 
   useEffect(() => {
     const fetchProgress = async () => {
-      if (!habit?._id || !isMounted.current) return
-
-      try {
+      if (!habit?._id ) return
         await dispatch(getProgressAction(habit._id))
-      } catch (error) {
-        console.error("Failed to fetch progress:", error)
-      }
     }
 
     fetchProgress()
-  }, [habit?._id, dispatch])
+  }, [habit?._id, dispatch,habits])
 
   if (isLoading) {
     return (
@@ -336,7 +304,7 @@ const HabitDetails = () => {
                 styles.dayDot,
                 {
                   backgroundColor:
-                  progress?  (progress?.streak && day <= progress.streak ? COLORS.primary:isDark?"#333":'#f59e0b') : habit.sucsess ? COLORS.primary  : "#333",
+                  progress?  (progress?.streak && day <= progress.streak ? COLORS.primary:isDark?"#333":'#f59e0b') :habit.sucsess && day <= habit.sucsess ? COLORS.primary  : "#333",
                 },
               ]}
             />
