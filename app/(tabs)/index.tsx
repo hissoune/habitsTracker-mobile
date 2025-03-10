@@ -10,18 +10,19 @@ import {
   ScrollView,
   Animated,
   ImageBackground,
-  Button,
-  Image,
-  TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Circle } from "react-native-svg";
-import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
+import {  MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useMemo, useEffect, useRef } from "react";
-import { COLORS } from "@/constants/Colors";
+import { Colors, COLORS } from "@/constants/Colors";
 import { useSelector } from "react-redux";
 import { RootState } from "../(redux)/store";
 import { ChallengeCard } from "@/components/ui/renderChalenge";
+import { ComonStyles } from "@/components/ui/comonStyles";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { getAllChalengesAction } from "../(redux)/chalengesSlice";
 
 const habits = [
   { id: 1, name: "Morning Workout", progress: 0.8, streak: 12, icon: "weight-lifter" },
@@ -87,12 +88,17 @@ const CircularProgress = ({ progress, size = 70 }: { progress: number; size: num
 };
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme()|| "light";
   const isDark = colorScheme === "dark";
   const { chalenges, isLoading } = useSelector((state: RootState) => state.chalenge)
-
+  const colors = Colors[colorScheme]
   const stats = useMemo(() => ({ streak: 15, completed: 45, ongoing: 3 }), []);
+  const dispatch = useAppDispatch()
 
+   useEffect(() => {
+      dispatch(getAllChalengesAction())
+    }, [dispatch])
+    
   const renderHabit = ({ item }: { item: any }) => (
     <View style={[styles.habitCard, { backgroundColor: isDark ? "#1a1a1a" : "#fff" }]}>
       <View style={styles.habitHeader}>
@@ -105,39 +111,14 @@ export default function HomeScreen() {
       </View>
     </View>
   );
-  const renderChallenge = ({ item }:{ item:any }) => (
-    <View style={[styles.card,{ backgroundColor: isDark ? "#1a1a1a" : "#fff" }]}>
-      <View style={styles.chalengeHeader}>
-         <Image source={{ uri: item.creator.avatar }} style={styles.avatar} />
-        <TouchableOpacity
-            style={[
-              styles.joinButton,
-            
-            ]}
-            activeOpacity={0.8}
-          >
-<AntDesign name="deleteusergroup" size={24} color="#fff" />   
-    </TouchableOpacity>
-
-      </View>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
-      <Text style={styles.creator}>By: {item.creator.name}</Text>
-      <Text style={styles.participants}>
-        Participants:{" "}
-        {item.participants.length > 0
-          ? `${item.participants[item.participants.length - 1].name} + ${
-              item.participants.length - 1
-            }`
-          : "No participants yet"}
-      </Text>
-      <Text style={styles.stats}>
-        👍 {item.likes} | 👎 {item.dislikes} | ⭐ {item.favorites}
-      </Text>
-  
-
-    </View>
-  );
+ 
+  if (isLoading) {
+      return (
+        <View style={[ComonStyles.loaderContainer, { backgroundColor: colors.background }]}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      )
+    }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: isDark ? "#000" : "#f5f5f5" }]}>
