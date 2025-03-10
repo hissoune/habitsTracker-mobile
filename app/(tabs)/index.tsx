@@ -19,6 +19,9 @@ import Svg, { Circle } from "react-native-svg";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useMemo, useEffect, useRef } from "react";
 import { COLORS } from "@/constants/Colors";
+import { useSelector } from "react-redux";
+import { RootState } from "../(redux)/store";
+import { ChallengeCard } from "@/components/ui/renderChalenge";
 
 const habits = [
   { id: 1, name: "Morning Workout", progress: 0.8, streak: 12, icon: "weight-lifter" },
@@ -26,73 +29,7 @@ const habits = [
   { id: 3, name: "Read 30min", progress: 0.4, streak: 3, icon: "book-open-page-variant" },
 ];
 
-const challenges = [
-  {
-    id: 1,
-    title: "30-Day Fitness Challenge",
-    description: "Commit to daily workouts for a healthier lifestyle.",
-    creator: {
-      name: "John Doe",
-      email: "john.doe@example.com",
-      avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-    },
-    participants: [{ name: "Alice" }, { name: "Bob" }, { name: "Charlie" }],
-    likes: 150,
-    dislikes: 12,
-    favorites: 85,
-    joined: true,
-  },
-  {
-    id: 2,
-    title: "7-Day No Sugar Challenge",
-    description: "Avoid all added sugars for a week and reset your cravings.",
-    creator: {
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-    },
-    participants: [{ name: "David" }, { name: "Emma" }],
-    likes: 98,
-    dislikes: 5,
-    favorites: 60,
-    joined: false,
-  },
-  {
-    id: 4,
-    title: "30-Day Meditation Challenge",
-    description: "Practice mindfulness every day for mental clarity and peace.",
-    creator: {
-      name: "Alex Johnson",
-      email: "alex.johnson@example.com",
-      avatar: "https://randomuser.me/api/portraits/men/3.jpg",
-    },
-    participants: [
-      { name: "Olivia" },
-      { name: "Liam" },
-      { name: "Sophia" },
-      { name: "Mason" },
-    ],
-    likes: 200,
-    dislikes: 20,
-    favorites: 100,
-    joined: true,
-  },
-  {
-    id: 5,
-    title: "10-Day Hydration Challenge",
-    description: "Drink at least 8 glasses of water daily for better health.",
-    creator: {
-      name: "Emily Wilson",
-      email: "emily.wilson@example.com",
-      avatar: "https://randomuser.me/api/portraits/women/3.jpg",
-    },
-    participants: [{ name: "Noah" }, { name: "Ava" }, { name: "Ethan" }],
-    likes: 120,
-    dislikes: 8,
-    favorites: 70,
-    joined: false,
-  },
-];
+
 
 
 
@@ -152,6 +89,7 @@ const CircularProgress = ({ progress, size = 70 }: { progress: number; size: num
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+  const { chalenges, isLoading } = useSelector((state: RootState) => state.chalenge)
 
   const stats = useMemo(() => ({ streak: 15, completed: 45, ongoing: 3 }), []);
 
@@ -233,13 +171,13 @@ export default function HomeScreen() {
           />
         </View>
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: isDark ? "#fff" : "#000" }]}>Today's Chalenges</Text>
-          <FlatList
-            data={challenges}
-            renderItem={renderChallenge}
-            keyExtractor={(item) => item.id.toString()}
-            scrollEnabled={false}
-          />
+          <Text style={[styles.sectionTitle, { color: isDark ? "#fff" : "#000" }]}>Active Chalenges</Text>
+              <FlatList
+                      data={chalenges}
+                      renderItem={({ item }) => <ChallengeCard item={item} />}
+                      keyExtractor={(item) => (item._id ? item._id.toString() : "")}
+                      scrollEnabled={false}
+                    />
         </View>
       </ScrollView>
     </SafeAreaView>
