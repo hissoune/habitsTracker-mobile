@@ -1,4 +1,4 @@
-import { replaceIp } from "@/app/helpers/replaceIp";
+import  replaceIp  from "@/app/helpers/replaceIp";
 import { COLORS, Colors } from "@/constants/Colors";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -24,9 +24,7 @@ export const ChallengeCard = ({ item }: ChallengeCardProps) => {
     >
       <View style={styles.challengeHeader}>
         <Image source={{ uri: replaceIp(item.creator.image || "", process.env.EXPO_PUBLIC_REPLACE || "") }} style={styles.avatar} />
-        <TouchableOpacity style={[styles.joinButton, { backgroundColor: COLORS.primary }]} activeOpacity={0.8}>
-          <AntDesign name="deleteusergroup" size={24} color="#fff" />
-        </TouchableOpacity>
+        
       </View>
       <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
       <Text style={[styles.description, { color: colors.text, opacity: 0.8 }]}>{item.description}</Text>
