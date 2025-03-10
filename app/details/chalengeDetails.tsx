@@ -23,7 +23,7 @@ import { useAppDispatch } from "@/hooks/useAppDispatch"
 import { compleeteProgressAction, getParticipantProgressAction, joinChalengeAction } from "../(redux)/chalengesSlice"
 import { chalenge } from "@/constants/types"
 import { Image } from "react-native"
-import { replaceIp } from "../helpers/replaceIp"
+import  replaceIp  from "../helpers/replaceIp"
 import React from "react"
 
 
