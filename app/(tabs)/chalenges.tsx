@@ -1,18 +1,18 @@
 "use client"
 
 import { useAppDispatch } from "@/hooks/useAppDispatch"
-import { AntDesign } from "@expo/vector-icons"
+import {  Feather } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import { useEffect } from "react"
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   ImageBackground,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
   useColorScheme,
@@ -22,7 +22,8 @@ import type { RootState } from "../(redux)/store"
 import { getAllChalengesAction } from "../(redux)/chalengesSlice"
 import { useRouter } from "expo-router"
 import { Colors, COLORS } from "@/constants/Colors"
-import { replaceIp } from "../helpers/replaceIp"
+import { ChallengeCard } from "@/components/ui/renderChalenge"
+import { ComonStyles } from "@/components/ui/comonStyles"
 
 const Chalenges = () => {
   const dispatch = useAppDispatch()
@@ -38,39 +39,13 @@ const Chalenges = () => {
     dispatch(getAllChalengesAction())
   }, [dispatch])
 
-  const handelChalengeDetails = (challengeId: string) => {
-    router.push(`/details/chalengeDetails?challengeId=${challengeId}`)
-  }
+  
 
-  const renderChallenge = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      onPress={() => handelChalengeDetails(item._id)}
-      style={[styles.card, { backgroundColor: colorScheme === "dark" ? "rgba(255, 255, 255, 0.1)" : "#fff" }]}
-    >
-      <View style={styles.challengeHeader}>
-        <Image source={{ uri: replaceIp(item.creator.image || "",process.env.EXPO_PUBLIC_REPLACE || "") }} style={styles.avatar} />
-        <TouchableOpacity style={[styles.joinButton, { backgroundColor: COLORS.primary }]} activeOpacity={0.8}>
-          <AntDesign name="deleteusergroup" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
-      <Text style={[styles.description, { color: colors.text, opacity: 0.8 }]}>{item.description}</Text>
-      <Text style={[styles.creator, { color: colors.text, opacity: 0.6 }]}>By: {item.creator.name}</Text>
-      <Text style={[styles.participants, { color: colors.text, opacity: 0.6 }]}>
-        Participants:{" "}
-        {item.participants.length > 0
-          ? `${item.participants[item.participants.length - 1].userDetails.name} ${(item.participants.length - 1) != 0 ? "+" + (item.participants.length - 1) : ""}`
-          : "No participants yet"}
-      </Text>
-      <Text style={[styles.stats, { color: colors.text, opacity: 0.6 }]}>
-        👍 {item.likes} | 👎 {item.dislikes} | ⭐ {item.favorites}
-      </Text>
-    </TouchableOpacity>
-  )
+  
 
   if (isLoading) {
     return (
-      <View style={[styles.loaderContainer, { backgroundColor: colors.background }]}>
+      <View style={[ComonStyles.loaderContainer, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     )
@@ -101,10 +76,41 @@ const Chalenges = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Today's Challenges</Text>
+          <View>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <Feather name="search" size={20} color={colors.text} style={styles.searchIcon} />
+              <TextInput
+                placeholder="Search challenges..."
+                placeholderTextColor={colors.text + "80"}
+                style={[styles.searchInput, { color: colors.text }]}
+              />
+            </View>
+            <TouchableOpacity 
+              style={styles.userChallengesButton}
+              onPress={() => router.push('/details/userChalenges')}
+            >
+              <Feather name="user" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.filterContainer}>
+            <View style={styles.filterButtons}>
+              <TouchableOpacity style={[styles.filterButton, styles.filterButtonActive]}>
+                <Text style={styles.filterButtonTextActive}>Daily</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.filterButton}>
+                <Text style={[styles.filterButtonText, { color: colors.text }]}>Weekly</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.filterButton}>
+                <Text style={[styles.filterButtonText, { color: colors.text }]}>Monthly</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          </View>
           <FlatList
             data={chalenges}
-            renderItem={renderChallenge}
+            renderItem={({ item }) => <ChallengeCard item={item} />}
             keyExtractor={(item) => (item._id ? item._id.toString() : "")}
             scrollEnabled={false}
           />
@@ -129,11 +135,7 @@ const styles = StyleSheet.create({
   headerImageStyle: {
     borderRadius: 10,
   },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+ 
   header: {
     padding: 16,
     borderBottomLeftRadius: 10,
@@ -206,6 +208,67 @@ const styles = StyleSheet.create({
   },
   stats: {
     fontSize: 12,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 46,
+    marginRight: 10,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 46,
+    fontSize: 16,
+  },
+  userChallengesButton: {
+    backgroundColor: COLORS.primary,
+    width: 46,
+    height: 46,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterContainer: {
+    marginBottom: 16,
+  },
+  filterLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  filterButtons: {
+    flexDirection: 'row',
+  },
+  filterButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+  },
+  filterButtonActive: {
+    backgroundColor: COLORS.primary,
+  },
+  filterButtonText: {
+    fontSize: 14,
+  },
+  filterButtonTextActive: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
   },
 })
 
