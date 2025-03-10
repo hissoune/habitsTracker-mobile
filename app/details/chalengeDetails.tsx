@@ -20,7 +20,7 @@ import type { RootState } from "../(redux)/store"
 import { LinearGradient } from "expo-linear-gradient"
 import { COLORS, Colors } from "@/constants/Colors"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
-import { joinChalengeAction } from "../(redux)/chalengesSlice"
+import { compleeteProgressAction, getParticipantProgressAction, joinChalengeAction } from "../(redux)/chalengesSlice"
 import { chalenge } from "@/constants/types"
 import { Image } from "react-native"
 import { replaceIp } from "../helpers/replaceIp"
@@ -32,13 +32,11 @@ const { width } = Dimensions.get("window")
 
 const ChallengeDetails = () => {
   const { challengeId } = useLocalSearchParams()
-  const { chalenges } = useSelector((state: RootState) => state.chalenge)
+  const { chalenges ,progress} = useSelector((state: RootState) => state.chalenge)
   const { user } = useSelector((state: RootState) => state.auth)
   const [challenge, setChallenge] = useState<chalenge | undefined>(chalenges.find((ch) => ch._id === challengeId))
   const [isParticipant, setIsParticipant] = useState(false)
   const router = useRouter()
-  const userProgress = 0 // Define userProgress with an initial value
-  const [completedToday, setCompletedToday] = useState(false)
   const dispatch = useAppDispatch()
   
   const colorScheme = useColorScheme() || 'light'
@@ -48,12 +46,19 @@ const ChallengeDetails = () => {
 
   const currentUserId = user?._id
 
+  const [userProgress,setUserProgress] = useState(0)
+
+ 
   useEffect(() => {
     const currentChallenge = chalenges.find((ch) => ch._id === challengeId)
     if (currentChallenge) {
       setChallenge({ ...currentChallenge })
-      setIsParticipant(!!currentChallenge.participants?.some((p) => p.userId === currentUserId))
-    }
+      const participant = currentChallenge.participants?.find((p) => p.userId === currentUserId);
+      setIsParticipant(!!participant);
+      
+      if (participant) {
+        setUserProgress(participant.progress || 0); 
+      }    }
 
     Animated.loop(
       Animated.sequence([
@@ -69,7 +74,15 @@ const ChallengeDetails = () => {
         }),
       ]),
     ).start()
-  }, [challengeId, chalenges, scaleAnim, currentUserId]) 
+  }, [challengeId, chalenges, scaleAnim, currentUserId]) ;
+
+  useEffect(()=>{
+ 
+    if (challenge?._id) {
+       dispatch(getParticipantProgressAction(challenge?._id))
+    }
+
+  },[challenge,chalenges])
 
   const handleJoinChallenge = async (chalengeId:string) => {
     await dispatch(joinChalengeAction(chalengeId))
@@ -78,8 +91,10 @@ const ChallengeDetails = () => {
   }
 
   const handleMarkAsCompleted = () => {
-    // Implement the logic to mark the challenge as completed
-    setCompletedToday(true)
+    if (progress?._id) {
+      dispatch(compleeteProgressAction(progress?._id))
+    }
+    
     console.log("Marked as completed")
   }
 
@@ -276,29 +291,37 @@ const ChallengeDetails = () => {
                 </View>
 
                 <TouchableOpacity
-                  style={[styles.markCompletedButton, completedToday ? styles.markCompletedButtonDisabled : null]}
-                  onPress={handleMarkAsCompleted}
-                  disabled={completedToday}
-                >
-                  {completedToday ? (
-                    <>
-                      <MaterialCommunityIcons name="check-circle" size={24} color="#fff" />
-                      <Text style={styles.markCompletedButtonText}>Completed Today</Text>
-                    </>
-                  ) : (
-                    <>
-                      <Feather name="check-circle" size={24} color="#fff" />
-                      <Text style={styles.markCompletedButtonText}>
-                        Mark {challenge.frequency === "daily" ? "Today" : "This Week"} as Completed
-                      </Text>
-                    </>
-                  )}
-                </TouchableOpacity>
+                      style={[
+                        styles.markCompletedButton,
+                        progress?.isDone ? styles.markCompletedButtonDisabled : null,
+                      ]}
+                      onPress={handleMarkAsCompleted}
+                      disabled={progress?.isDone}
+                    >
+                      {userProgress === 100 ? (
+                        <>
+                          <Text style={styles.markCompletedButtonText}>You completed the challenge</Text>
+                        </>
+                      ) : progress?.isDone ? (
+                        <>
+                          <MaterialCommunityIcons name="check-circle" size={24} color="#fff" />
+                          <Text style={styles.markCompletedButtonText}>Completed Today</Text>
+                        </>
+                      ) : (
+                        <>
+                          <Feather name="check-circle" size={24} color="#fff" />
+                          <Text style={styles.markCompletedButtonText}>
+                            Mark {challenge.frequency === "daily" ? "Today" : "This Week"} as Completed
+                          </Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+
 
                 <View style={styles.progressTips}>
                   <MaterialIcons name="lightbulb-outline" size={20} color={COLORS.primary} />
                   <Text style={[styles.progressTipsText, { color: colorScheme === "dark" ? "#ccc" : "#777" }]}>
-                    {completedToday
+                    {progress?.isDone
                       ? `Great job! Come back ${challenge.frequency === "daily" ? "tomorrow" : "next week"} to continue your progress.`
                       : `Complete your ${challenge.frequency} task to increase your progress.`}
                   </Text>
