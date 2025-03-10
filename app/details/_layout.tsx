@@ -30,7 +30,6 @@ export default function DetailsLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name='chalengeDetails' options={{ headerShown: false, }}/>
-        <Stack.Screen name='userChalenges' options={{ title: 'Your Challenges', }}/>
       </Stack>
        
   

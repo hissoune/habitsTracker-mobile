@@ -1,9 +1,9 @@
 "use client"
 
 import { useAppDispatch } from "@/hooks/useAppDispatch"
-import {  Feather } from "@expo/vector-icons"
+import {  Feather, Octicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import {
   ActivityIndicator,
   FlatList,
@@ -24,11 +24,13 @@ import { useRouter } from "expo-router"
 import { Colors, COLORS } from "@/constants/Colors"
 import { ChallengeCard } from "@/components/ui/renderChalenge"
 import { ComonStyles } from "@/components/ui/comonStyles"
+import ChallengeCreation from "@/components/chalengeCreation"
 
 const Chalenges = () => {
   const dispatch = useAppDispatch()
   const { chalenges, isLoading } = useSelector((state: RootState) => state.chalenge)
   const router = useRouter()
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const colorScheme = useColorScheme() || "light"
   const colors = Colors[colorScheme]
@@ -88,10 +90,12 @@ const Chalenges = () => {
             </View>
             <TouchableOpacity 
               style={styles.userChallengesButton}
-              onPress={() => router.push('/details/userChalenges')}
+              onPress={() => setIsModalVisible(true)}
             >
-              <Feather name="user" size={20} color="#fff" />
-            </TouchableOpacity>
+          <Octicons name="diff-added" size={24} color={colors.text} />    
+          </TouchableOpacity>
+          <ChallengeCreation visible={isModalVisible} onClose={() => setIsModalVisible(false)}/>
+
           </View>
 
           <View style={styles.filterContainer}>

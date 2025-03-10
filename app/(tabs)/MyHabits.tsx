@@ -78,7 +78,7 @@ export const CircularProgress = ({ progress, size = 70, habitStatus }:{progress:
       duration: 1000,
       useNativeDriver: false,
     }).start()
-  }, [progress, animatedValue]) // Added animatedValue to dependencies
+  }, [progress, animatedValue]) 
 
   const animatedStrokeDashoffset = animatedValue.interpolate({
     inputRange: [0, 1],
