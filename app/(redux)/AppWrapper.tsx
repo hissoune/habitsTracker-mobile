@@ -31,7 +31,7 @@ const AppWrapper = () => {
     habitssocket.on('habitUpdated', (data) => {
      if (data.habit.userId == user?._id) {
       dispatch(updateScheduledHabits(data))
-
+       
      }
     
     });
