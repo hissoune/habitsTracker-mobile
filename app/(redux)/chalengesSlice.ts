@@ -1,7 +1,9 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { chalenge } from '../../constants/types';
+import { chalenge, chalengeProgress } from '../../constants/types';
 import { createChalenge, deleteChalenge, getAllChalenges, joinChalenge, updateChalenge } from '../(services)/apis/chalengesApi';
+import { compleeteProgress, getParticipantProgress } from '../(services)/apis/chalengeProgress';
+import { act } from 'react';
 
 
 export const getAllChalengesAction = createAsyncThunk(
@@ -45,18 +47,35 @@ export const deleteChalengeAction = createAsyncThunk(
     }
 );
 
+export const  getParticipantProgressAction = createAsyncThunk(
+    "chalenges/participantProgress",
+    async (chalengeId:string)=>{
+        const progress = await getParticipantProgress(chalengeId);
+        return progress
+    }
+);
+export const compleeteProgressAction = createAsyncThunk(
+    "chalenges/progress/compleete",
+    async (id:string)=>{
+          const progress= await compleeteProgress(id);
+          return progress;
+    }
+);
+
 
 
 
 const initialState :{
  chalenges:chalenge[],
  chalenge:chalenge | null,
+ progress:chalengeProgress|null
  isLoading:boolean,
  error:string
 
 }={
     chalenges:[],
     chalenge:null,
+    progress:null,
     isLoading:false,
     error:''
 
@@ -65,7 +84,11 @@ const initialState :{
 const chalengesSlice = createSlice({
     name: 'chalenges',
     initialState,
-    reducers:{},
+    reducers:{
+        updateRealTimechalenges:(state,action)=>{
+            state.chalenges = state.chalenges.map((chalenge)=> chalenge._id == action.payload._id ? action.payload : chalenge )
+        }
+    },
     extraReducers:(builder)=>{
        builder
        .addCase(getAllChalengesAction.pending, (state,action)=>{
@@ -129,8 +152,34 @@ const chalengesSlice = createSlice({
       .addCase(deleteChalengeAction.rejected, (state, action) => {
         state.isLoading = false;
         state.error =  "Something went wrong";
+      })
+      .addCase(getParticipantProgressAction.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getParticipantProgressAction.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.progress = action.payload
+      })
+      .addCase(getParticipantProgressAction.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =  "Something went wrong";
+      })
+      .addCase(compleeteProgressAction.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(compleeteProgressAction.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.progress = action.payload
+      })
+      .addCase(compleeteProgressAction.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =  "Something went wrong";
       });
+
+      
     }
 });
+
+export const {updateRealTimechalenges} = chalengesSlice.actions
 
 export const chalengesReducer= chalengesSlice.reducer
