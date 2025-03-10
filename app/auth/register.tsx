@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { replaceIp } from '../helpers/replaceIp';
+import  replaceIp  from '../helpers/replaceIp';
 import { uploadImageToBackend } from '../helpers/minio.helper';
 import * as ImagePicker from "expo-image-picker"
 import { useAppDispatch } from '@/hooks/useAppDispatch';
