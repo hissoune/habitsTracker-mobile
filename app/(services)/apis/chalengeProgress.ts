@@ -6,6 +6,7 @@ export const getParticipantProgress = async (chalengeId:string )=>{
     return response.data
 }
 
-export const compleeteProgress = async (chalengeId:string )=>{
-
+export const compleeteProgress = async (id:string )=>{
+    const response = await axiosInstance.patch(`chalenges-service/progress/${id}`,{});
+    return response.data
 }

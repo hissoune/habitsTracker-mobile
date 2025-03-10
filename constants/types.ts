@@ -49,6 +49,14 @@ export type Habit=  {
 
     }
 
+     export type chalengeProgress = {
+        _id:string
+        userId?:string,
+        habitId?:string,
+        streak?:number,
+        isDone?:boolean
+     }
+
     export type chalenge = {
         _id?:string,
         title: string;

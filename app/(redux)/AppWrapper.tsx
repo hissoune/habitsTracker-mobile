@@ -1,4 +1,4 @@
-import  { useEffect } from "react";
+import  { useEffect, useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { loadUser } from "./aithSlice";
@@ -6,6 +6,8 @@ import io from 'socket.io-client';
 import { updateScheduledHabits } from "./hapitSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "./store";
+import { updateRealTimechalenges } from "./chalengesSlice";
+import { registerForPushNotificationsAsync } from "../helpers/pushNotificationsPermission";
 
  
 const AppWrapper = () => {
@@ -15,8 +17,17 @@ const AppWrapper = () => {
   const habitssocket = io(process.env.EXPO_PUBLIC_HABITS);
   const chalengesSocket = io(process.env.EXPO_PUBLIC_CHALENGES)
   const {user}=useSelector((state:RootState)=>state.auth)
-  
+  const [expoPushToken, setExpoPushToken] = useState('');
+
   useEffect(() => {
+
+    registerForPushNotificationsAsync().then(token => {
+      if (token) {
+        setExpoPushToken(token);
+      }
+    });
+
+
     habitssocket.on('habitUpdated', (data) => {
      if (data.habit.userId == user?._id) {
       dispatch(updateScheduledHabits(data))
@@ -25,7 +36,9 @@ const AppWrapper = () => {
     
     });
     chalengesSocket.on('chalengeUpdated', (data)=>{
-       
+      if (data.userId == user?._id) {        
+        dispatch(updateRealTimechalenges(data))
+       }
     });
     
     if (!user) {
@@ -33,6 +46,7 @@ const AppWrapper = () => {
     }
     return () => {
       habitssocket.close()
+      chalengesSocket.close()
     }
 
     
