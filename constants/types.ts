@@ -62,7 +62,7 @@ export type Habit=  {
         title: string;
         description: string;
         image?: string;
-        creator?: string;
+        creator?: User;
         participants?: { userId: string, progress: number,userDetails?:User }[];
         frequency:string,
         repeats:number;
