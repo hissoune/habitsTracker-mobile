@@ -13,7 +13,7 @@ import {
   ScrollView,
   useColorScheme,
 } from "react-native"
-import { FontAwesome, MaterialIcons, Ionicons, AntDesign, Feather, MaterialCommunityIcons } from "@expo/vector-icons"
+import { FontAwesome, MaterialIcons, Ionicons, AntDesign, Feather, MaterialCommunityIcons, Octicons } from "@expo/vector-icons"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSelector } from "react-redux"
 import type { RootState } from "../(redux)/store"
@@ -22,9 +22,11 @@ import { COLORS, Colors } from "@/constants/Colors"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
 import { compleeteProgressAction, getParticipantProgressAction, joinChalengeAction } from "../(redux)/chalengesSlice"
 import { chalenge } from "@/constants/types"
-import { Image } from "react-native"
-import  replaceIp  from "../helpers/replaceIp"
+
 import React from "react"
+import renderParticipant from '../../components/renderParticipants';
+import RenderParticipant from "../../components/renderParticipants"
+import UsersSelector from "@/components/usersSelector"
 
 
 
@@ -38,7 +40,7 @@ const ChallengeDetails = () => {
   const [isParticipant, setIsParticipant] = useState(false)
   const router = useRouter()
   const dispatch = useAppDispatch()
-  
+  const [isUserSelector,setIsUserSelector]=useState(false)
   const colorScheme = useColorScheme() || 'light'
   const colors = Colors[colorScheme]
   
@@ -48,7 +50,7 @@ const ChallengeDetails = () => {
 
   const [userProgress,setUserProgress] = useState(0)
 
- 
+ const [selectedUsers,setSelectedUsers]=useState([])
   useEffect(() => {
     const currentChallenge = chalenges.find((ch) => ch._id === challengeId)
     if (currentChallenge) {
@@ -84,6 +86,7 @@ const ChallengeDetails = () => {
 
   },[challenge,chalenges])
 
+
   const handleJoinChallenge = async (chalengeId:string) => {
     await dispatch(joinChalengeAction(chalengeId))
     console.log("Joining challenge:", challengeId)
@@ -116,31 +119,7 @@ const ChallengeDetails = () => {
     )
   }
 
-  const renderParticipant = ({ item, index }: { item: { userId: string; progress: number,userDetails:any }; index: number }) => (
-    <ScrollView horizontal contentContainerStyle={[styles.participantContainer, { borderBottomColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)' }]}>
-      <View style={styles.participantInfo}>
-        <View style={[styles.participantRank, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)' }]}>
-          <Text style={[styles.rankText, { color: colors.text }]}>{index + 1}</Text>
-        </View>
-     <Image source={{ uri: replaceIp(item.userDetails.image,process.env.EXPO_PUBLIC_REPLACE || "")  }} style={styles.avatar} />    
-     <Text style={[styles.participantName, { color: colors.text }]}>{item.userDetails.name}</Text>
-      </View>
-      <View style={styles.progressBarContainer}>
-        <View style={[styles.progressBarBackground, { backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)' }]}>
-          <View
-            style={[
-              styles.progressBar,
-              {
-                width: `${item.progress}%`,
-                backgroundColor: item.progress > 75 ? "#4CAF50" : item.progress > 40 ? "#FFC107" : COLORS.primary,
-              },
-            ]}
-          />
-        </View>
-        <Text style={[styles.participantProgress, { color: colors.text }]}>{item.progress}%</Text>
-      </View>
-    </ScrollView>
-  )
+
 
   const gradientColors: [string, string] = colorScheme === 'dark' 
     ? ["rgba(21, 23, 24, 0.9)", "rgba(15, 17, 18, 1)"] 
@@ -157,7 +136,7 @@ const ChallengeDetails = () => {
           }]} 
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.icon} />
+          <Ionicons name="arrow-back" size={28} color={colors.icon} />
         </TouchableOpacity>
 
         <View style={styles.container}>
@@ -230,13 +209,28 @@ const ChallengeDetails = () => {
           }]}>
             <View style={styles.leaderboardHeader}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>Leaderboard</Text>
-              <AntDesign name="Trophy" size={24} color="#FFD700" />
+              { challenge.creator?._id === user?._id &&(
+                  <TouchableOpacity 
+                  style={styles.addParticipantsButton}
+                  onPress={()=>setIsUserSelector(true)}
+                  >
+                  <AntDesign name="addusergroup" size={28} color={colors.text} />
+                  <UsersSelector 
+                    visible={isUserSelector} 
+                    onClose={() => setIsUserSelector(false)} 
+                    onSelectParticipants={(participants) => setSelectedUsers(participants)} 
+                  />
+                  </TouchableOpacity>
+                 
+              )}
+             
+              <AntDesign name="Trophy" size={28} color="#FFD700" />
             </View>
 
             {challenge.participants && challenge.participants.length > 0 ? (
               <FlatList
                 data={[...challenge.participants].filter((p): p is { userId: string; progress: number; userDetails: any } => !!p.userDetails).sort((a, b) => b.progress - a.progress)}
-                renderItem={renderParticipant}
+                renderItem={({ item, index }) => <RenderParticipant item={item} index={index} />}
                 keyExtractor={(item) => item.userId}
                 contentContainerStyle={styles.participantList}
                 scrollEnabled={false}
@@ -609,6 +603,21 @@ const styles = StyleSheet.create({
   },
   markCompletedButtonDisabled: {
     backgroundColor: "#ccc",
+  },
+  userChallengesButton: {
+    backgroundColor: COLORS.primary,
+    width: 46,
+    height: 46,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addParticipantsButton: {
+
+    padding: 5,
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 })
 
