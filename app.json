@@ -10,13 +10,25 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "backgroundColor": "#f0f0f0"
+      "backgroundColor": "#f0f0f0",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/a_logo_for_habits_tracking_-removebg-preview.png",
         "backgroundColor": "#f0f0f0"
-      }
+      },
+      "useNextNotificationsApi": true,
+      "permissions": [
+        "NOTIFICATIONS",
+        "NOTIFICATIONS"
+      ],
+      "package": "com.anonymous.myHabitsMobile"
     },
     "web": {
       "bundler": "metro",
@@ -32,6 +44,14 @@
           "image": "./assets/images/a_logo_for_habits_tracking_-removebg-preview.png",
           "resizeMode": "contain",
           "backgroundColor": "#f0f0f0"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/a_logo_for_habits_tracking_-removebg-preview.png",
+          "color": "#ffffff",
+          "iosDisplayInForeground": true
         }
       ]
     ],
