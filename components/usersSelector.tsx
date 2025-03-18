@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Modal, 
   View, 
@@ -7,16 +7,20 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   useColorScheme,
-  SafeAreaView
+  SafeAreaView,
+  Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, Colors } from '@/constants/Colors';
 import { AntDesign, Feather } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/app/(redux)/store';
+import { User } from '@/constants/types';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { getAllUsersAction } from '@/app/(redux)/aithSlice';
+import replaceIp from '@/app/helpers/replaceIp';
 
-interface User {
-  id: string;
-  name: string;
-}
+
 
 interface UsersSelectorProps {
   visible: boolean;
@@ -24,27 +28,22 @@ interface UsersSelectorProps {
   onSelectParticipants: (selectedUsers: any) => void;
 }
 
-// Sample users data
-const users = [
-  { id: 'user1', name: "John Doe" },
-  { id: 'user2', name: "Jane Smith" },
-  { id: 'user3', name: "Robert Johnson" },
-  { id: 'user4', name: "Emily Davis" },
-  { id: 'user5', name: "Michael Brown" },
-  { id: 'user6', name: "Sarah Wilson" },
-  { id: 'user7', name: "David Taylor" },
-  { id: 'user8', name: "Lisa Anderson" },
-];
+
 
 const UsersSelector: React.FC<UsersSelectorProps> = ({ visible, onClose, onSelectParticipants }) => {
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
+  const {users}=useSelector((state:RootState)=>state.auth)
+  const dispatch = useAppDispatch()
 
+  useEffect(()=>{
+    dispatch(getAllUsersAction())
+  },[])
   const toggleUserSelection = (user: User) => {
     setSelectedUsers(prevSelectedUsers => {
-      if (prevSelectedUsers.find(u => u.id === user.id)) {
-        return prevSelectedUsers.filter(u => u.id !== user.id);
+      if (prevSelectedUsers.find(u => u._id === user._id)) {
+        return prevSelectedUsers.filter(u => u._id !== user._id);
       } else {
         return [...prevSelectedUsers, user];
       }
@@ -91,9 +90,9 @@ const UsersSelector: React.FC<UsersSelectorProps> = ({ visible, onClose, onSelec
               
               <FlatList
                 data={users}
-                keyExtractor={item => item.id}
+                keyExtractor={(item) => item._id || item.name}
                 renderItem={({ item }) => {
-                  const isSelected = selectedUsers.find(u => u.id === item.id);
+                  const isSelected = selectedUsers.find(u => u._id === item._id);
                   return (
                     <TouchableOpacity 
                       onPress={() => toggleUserSelection(item)}
@@ -108,7 +107,10 @@ const UsersSelector: React.FC<UsersSelectorProps> = ({ visible, onClose, onSelec
                     >
                       <View style={styles.userInfo}>
                         <View style={[styles.userAvatar, { backgroundColor: COLORS.primary }]}>
-                          <Text style={styles.userInitial}>{item.name.charAt(0)}</Text>
+                        <Image
+              source={{ uri: replaceIp(item.image || "", process.env.EXPO_PUBLIC_REPLACE || "") || "https://via.placeholder.com/150" }}
+              style={[styles.profileImage, { borderColor: COLORS.primary }]}
+            />
                         </View>
                         <Text style={[styles.userName, { color: colors.text }]}>{item.name}</Text>
                       </View>
@@ -297,6 +299,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 50,
+    borderWidth: 3,
   },
 });
 
