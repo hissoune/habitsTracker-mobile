@@ -20,11 +20,9 @@ import type { RootState } from "../(redux)/store"
 import { LinearGradient } from "expo-linear-gradient"
 import { COLORS, Colors } from "@/constants/Colors"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
-import { compleeteProgressAction, getParticipantProgressAction, joinChalengeAction } from "../(redux)/chalengesSlice"
-import { chalenge } from "@/constants/types"
-
+import { compleeteProgressAction, getParticipantProgressAction, joinChalengeAction, updateChalengeActon } from "../(redux)/chalengesSlice"
+import { chalenge, User } from "@/constants/types"
 import React from "react"
-import renderParticipant from '../../components/renderParticipants';
 import RenderParticipant from "../../components/renderParticipants"
 import UsersSelector from "@/components/usersSelector"
 
@@ -50,7 +48,6 @@ const ChallengeDetails = () => {
 
   const [userProgress,setUserProgress] = useState(0)
 
- const [selectedUsers,setSelectedUsers]=useState([])
   useEffect(() => {
     const currentChallenge = chalenges.find((ch) => ch._id === challengeId)
     if (currentChallenge) {
@@ -86,6 +83,12 @@ const ChallengeDetails = () => {
 
   },[challenge,chalenges])
 
+const handelAddParticipants =  (participants:any)=>{
+  if (challenge?._id) {
+    dispatch(updateChalengeActon({ chalengeId: challenge._id, chalenge: { participants } }))
+  }
+
+}
 
   const handleJoinChallenge = async (chalengeId:string) => {
     await dispatch(joinChalengeAction(chalengeId))
@@ -218,7 +221,7 @@ const ChallengeDetails = () => {
                   <UsersSelector 
                     visible={isUserSelector} 
                     onClose={() => setIsUserSelector(false)} 
-                    onSelectParticipants={(participants) => setSelectedUsers(participants)} 
+                    onSelectParticipants={(participants) => handelAddParticipants(participants)} 
                   />
                   </TouchableOpacity>
                  

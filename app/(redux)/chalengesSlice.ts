@@ -33,7 +33,7 @@ export const createChalengeAction = createAsyncThunk(
 
 export const updateChalengeActon = createAsyncThunk(
     "chalenges/update",
-    async ({ chalengeId, chalenge }: { chalengeId: string, chalenge: chalenge })=>{
+    async ({ chalengeId, chalenge }: { chalengeId: string, chalenge: Partial<chalenge> })=>{
         const challenge = await updateChalenge(chalengeId,chalenge);
         return challenge
     }

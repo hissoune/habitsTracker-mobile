@@ -11,6 +11,12 @@ export const register = async (user:User)=>{
 
 }
 
+export const getAllUsers = async ()=>{
+  const response = await axiosInstance.get('auth-service/auth/all_users');
+
+  return response.data
+}
+
 export const login = async (user: { email: string; password: string }) => {
     try {
       const response = await axiosInstance.post('auth-service/auth/login', user);

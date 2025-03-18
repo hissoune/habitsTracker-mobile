@@ -1,16 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from '@/constants/types';
-import { login, register } from '../(services)/apis/authApi';
+import { getAllUsers, login, register } from '../(services)/apis/authApi';
 
 const initialState:{
     user: User |null,
+    users:User[]
     token:string | null,
     inAuth: boolean,
     isLoading: boolean,
     error: string | null,
 } = {
     user: null,
+    users:[],
     token:null,
     inAuth: false,
     isLoading: false,
@@ -41,7 +43,15 @@ export const loadUser = createAsyncThunk(
         //.....           
         return user && token ? JSON.parse(user):null;
     }
-)
+);
+
+export const getAllUsersAction = createAsyncThunk(
+    "auth/allUsers",
+    async ()=>{
+        const users = await getAllUsers();
+        return users
+    }
+);
 
 const authSlice = createSlice({
     name: 'auth',
@@ -103,6 +113,16 @@ const authSlice = createSlice({
             .addCase(loginAction.rejected, (state)=>{
                 state.error = "login faioled";
                 state.isLoading = false
+            })
+            .addCase(getAllUsersAction.pending, (state)=>{
+                state.isLoading = true
+            })
+            .addCase(getAllUsersAction.fulfilled, (state,action)=>{
+                state.users = action.payload,
+                state.isLoading = false
+            })
+            .addCase(getAllUsersAction.rejected, (state)=>{
+                state.error ="not for you "
             })
             
     },

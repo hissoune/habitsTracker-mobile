@@ -26,7 +26,7 @@ export const deleteChalenge =async (chalengeId:string)=>{
     return response.data
 }
 
-export const updateChalenge = async (chalengeId:string,chalenge:chalenge)=>{
+export const updateChalenge = async (chalengeId:string,chalenge:Partial<chalenge>)=>{
     const response = await axiosInstance.patch(`chalenges-service/chalenges/${chalengeId}`,chalenge);
     return response.data
 }
