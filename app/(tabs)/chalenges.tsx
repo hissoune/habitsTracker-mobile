@@ -1,7 +1,7 @@
 "use client"
 
 import { useAppDispatch } from "@/hooks/useAppDispatch"
-import {  Feather, Octicons } from "@expo/vector-icons"
+import { Feather, Octicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import { useEffect, useState } from "react"
 import {
@@ -30,7 +30,9 @@ const Chalenges = () => {
   const dispatch = useAppDispatch()
   const { chalenges, isLoading } = useSelector((state: RootState) => state.chalenge)
   const router = useRouter()
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedFilter, setSelectedFilter] = useState("Daily")
 
   const colorScheme = useColorScheme() || "light"
   const colors = Colors[colorScheme]
@@ -41,9 +43,14 @@ const Chalenges = () => {
     dispatch(getAllChalengesAction())
   }, [dispatch])
 
-  
-
-  
+  const filteredChalenges = chalenges
+    .filter((challenge) => challenge.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((challenge) => {
+      if (selectedFilter === "Daily") return challenge.frequency === "daily"
+      if (selectedFilter === "Weekly") return challenge.frequency === "weekly"
+      if (selectedFilter === "Monthly") return challenge.frequency === "monthly"
+      return true
+    })
 
   if (isLoading) {
     return (
@@ -78,7 +85,6 @@ const Chalenges = () => {
         </View>
 
         <View style={styles.section}>
-          <View>
           <View style={styles.searchContainer}>
             <View style={styles.searchBar}>
               <Feather name="search" size={20} color={colors.text} style={styles.searchIcon} />
@@ -86,34 +92,46 @@ const Chalenges = () => {
                 placeholder="Search challenges..."
                 placeholderTextColor={colors.text + "80"}
                 style={[styles.searchInput, { color: colors.text }]}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
               />
             </View>
             <TouchableOpacity 
               style={styles.userChallengesButton}
               onPress={() => setIsModalVisible(true)}
             >
-          <Octicons name="diff-added" size={24} color={colors.text} />    
-          </TouchableOpacity>
-          <ChallengeCreation visible={isModalVisible} onClose={() => setIsModalVisible(false)}/>
-
+              <Octicons name="diff-added" size={24} color={colors.text} />    
+            </TouchableOpacity>
+            <ChallengeCreation visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
           </View>
 
           <View style={styles.filterContainer}>
             <View style={styles.filterButtons}>
-              <TouchableOpacity style={[styles.filterButton, styles.filterButtonActive]}>
-                <Text style={styles.filterButtonTextActive}>Daily</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.filterButton}>
-                <Text style={[styles.filterButtonText, { color: colors.text }]}>Weekly</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.filterButton}>
-                <Text style={[styles.filterButtonText, { color: colors.text }]}>Monthly</Text>
-              </TouchableOpacity>
+              {["Daily", "Weekly", "Monthly"].map((filter) => (
+                <TouchableOpacity
+                  key={filter}
+                  style={[
+                    styles.filterButton,
+                    selectedFilter === filter && styles.filterButtonActive
+                  ]}
+                  onPress={() => setSelectedFilter(filter)}
+                >
+                  <Text
+                    style={[
+                      styles.filterButtonText,
+                      selectedFilter === filter && styles.filterButtonTextActive,
+                      { color: selectedFilter === filter ? "#fff" : colors.text }
+                    ]}
+                  >
+                    {filter}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
-          </View>
+
           <FlatList
-            data={chalenges}
+            data={filteredChalenges}
             renderItem={({ item }) => <ChallengeCard item={item} />}
             keyExtractor={(item) => (item._id ? item._id.toString() : "")}
             scrollEnabled={false}
@@ -139,7 +157,6 @@ const styles = StyleSheet.create({
   headerImageStyle: {
     borderRadius: 10,
   },
- 
   header: {
     padding: 16,
     borderBottomLeftRadius: 10,
@@ -163,66 +180,16 @@ const styles = StyleSheet.create({
   section: {
     padding: 16,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-  },
-  card: {
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  challengeHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  joinButton: {
-    padding: 8,
-    borderRadius: 20,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  creator: {
-    fontSize: 12,
-    marginBottom: 8,
-  },
-  participants: {
-    fontSize: 12,
-    marginBottom: 8,
-  },
-  stats: {
-    fontSize: 12,
-  },
   searchContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   searchBar: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.05)",
     borderRadius: 10,
     paddingHorizontal: 12,
     height: 46,
@@ -241,19 +208,14 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   filterContainer: {
     marginBottom: 16,
   },
-  filterLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
   filterButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   filterButton: {
     paddingVertical: 8,
@@ -261,7 +223,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 10,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
+    borderColor: "rgba(0,0,0,0.1)",
   },
   filterButtonActive: {
     backgroundColor: COLORS.primary,
@@ -270,11 +232,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   filterButtonTextActive: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 })
 
 export default Chalenges
-

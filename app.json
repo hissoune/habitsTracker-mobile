@@ -1,7 +1,9 @@
 {
   "expo": {
     "name": "myHabits-Mobile",
-    "slug": "myHabits-Mobile",
+    "slug": "habits",
+    "owner": "khaliddd",
+    "projectId": "a33b39db-6548-4b1f-bd46-1be961dbdba1",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/a_logo_for_habits_tracking_-removebg-preview.png",
@@ -51,12 +53,20 @@
         {
           "icon": "./assets/images/a_logo_for_habits_tracking_-removebg-preview.png",
           "color": "#ffffff",
-          "iosDisplayInForeground": true
+          "sounds": []
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "a33b39db-6548-4b1f-bd46-1be961dbdba1"
+      }
     }
   }
 }

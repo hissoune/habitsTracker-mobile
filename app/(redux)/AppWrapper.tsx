@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import  { useEffect } from "react";
 import { Stack, useRouter } from "expo-router";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { loadUser } from "./aithSlice";
@@ -8,9 +8,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "./store";
 import { updateRealTimechalenges } from "./chalengesSlice";
 import * as Notifications from 'expo-notifications';
-import { Alert } from "react-native";
-import axios from "axios";
-import { registerForPushNotificationsAsync } from "../helpers/pushNotificationsPermission";
+
+
 
  
 const AppWrapper = () => {
@@ -20,6 +19,14 @@ const AppWrapper = () => {
   const habitssocket = io(process.env.EXPO_PUBLIC_HABITS);
   const chalengesSocket = io(process.env.EXPO_PUBLIC_CHALENGES)
   const {user}=useSelector((state:RootState)=>state.auth)
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
 
   useEffect(() => {
 
@@ -34,9 +41,13 @@ const AppWrapper = () => {
     });
     chalengesSocket.on('chalengeUpdated', (data)=>{
              
-        dispatch(updateRealTimechalenges(data))
+      if (data.participants.includes(user?._id) || data.creator._id === user?._id) {
+        dispatch(updateRealTimechalenges(data));
+      }
       
     });
+
+    
     
     if (!user) {
       router.push('/')
@@ -50,40 +61,7 @@ const AppWrapper = () => {
     
   },[user])
 
-  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
 
- 
-
- 
-  
-
-  useEffect(() => {
-    // async function registerForPushNotifications() {
-    //   const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    //   let finalStatus = existingStatus;
-
-    //   if (existingStatus !== 'granted') {
-    //     const { status } = await Notifications.requestPermissionsAsync(); 
-    //     finalStatus = status;
-    //   }
-    
-    //   if (finalStatus !== 'granted') {
-    //     Alert.alert('Permission required', 'You need to allow notifications');
-    //     return;
-    //   }
-    
-    //   const token = (await Notifications.getExpoPushTokenAsync()).data;
-    //   setExpoPushToken(token);
-    
-    //   if (user?._id) {
-    //     await axios.post(`${process.env.EXPO_PUBLIC_URL}/notifications-service/notifications/token`, {
-    //       userId: user._id, 
-    //       pushToken: token
-    //     });
-    //   }
-    // }
-    registerForPushNotificationsAsync();
-  }, []);
 
   useEffect(() => {
 
@@ -91,6 +69,27 @@ const AppWrapper = () => {
     
 
   }, [dispatch]);
+
+  
+
+
+
+
+
+
+// useEffect(() => {
+//   const subscription = Notifications.addNotificationReceivedListener(notification => {
+//     // console.log('📩 Expo Notification received:', notification);
+//     // Alert.alert(
+//     //   notification.request.content.title ?? 'No Title',
+//     //   notification.request.content.body ?? 'No Content'
+//     // );
+//   });
+
+//   return () => {
+//     subscription.remove(); 
+//   };
+// }, []);
 
   return (
     <Stack>

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from '@/constants/types';
 import { getAllUsers, login, register } from '../(services)/apis/authApi';
+import { getAndsendTokenToBackend, rmovePushTokenAfterLogout } from '../(services)/apis/notificationsApi';
 
 const initialState:{
     user: User |null,
@@ -30,6 +31,7 @@ export const loginAction= createAsyncThunk(
     "auth/login",
     async (Credentials:{email:string,password:string})=>{
        const response = await login(Credentials);
+        await getAndsendTokenToBackend(response.user._id)
        return response;
     }
 );
@@ -53,19 +55,20 @@ export const getAllUsersAction = createAsyncThunk(
     }
 );
 
+export const logoutAction = createAsyncThunk(
+    "auth/logout",
+    async (userId:string)=>{
+        await AsyncStorage.removeItem("user");
+        await AsyncStorage.removeItem("token");
+        await rmovePushTokenAfterLogout(userId)
+        return null
+    }
+);
+
 const authSlice = createSlice({
     name: 'auth',
     initialState,
-    reducers: {
-        logoutAction:  (state)=>{
-           state.user = null ;
-           state.token = null;
-           AsyncStorage.removeItem('user') 
-           AsyncStorage.removeItem('token') 
-           state.inAuth = false;
-         
-        }
-    },
+    reducers: {},
     extraReducers: (builder) => {
         builder
             .addCase(loadUser.pending, (state) => {
@@ -124,9 +127,13 @@ const authSlice = createSlice({
             .addCase(getAllUsersAction.rejected, (state)=>{
                 state.error ="not for you "
             })
+            .addCase(logoutAction.fulfilled, (state)=>{
+                state.user = null ;
+                state.token = null; 
+                state.inAuth = false;
+            })
             
     },
 });
-export const {logoutAction} = authSlice.actions
 export const authReducer =authSlice.reducer ;
 

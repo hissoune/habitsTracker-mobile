@@ -24,7 +24,10 @@ const Profile = () => {
   const router = useRouter()
   
   const handelLogout = async () => {
-    await dispatch(logoutAction())
+    if (user?._id) {
+      await dispatch(logoutAction(user?._id))
+
+    }
     router.push('../')
   }
   
