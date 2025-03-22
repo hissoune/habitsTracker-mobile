@@ -10,7 +10,9 @@ import {
   Image, 
   useColorScheme,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ToastAndroid,
+  ActivityIndicator
 } from 'react-native';
 import replaceIp from '../helpers/replaceIp';
 import { uploadImageToBackend } from '../helpers/minio.helper';
@@ -24,13 +26,16 @@ import { COLORS, Colors } from '@/constants/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
+import { RootState } from '../(redux)/store';
 
 const Register = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
-  
+  const {isLoading} = useSelector((state: RootState) => state.auth);
+
   const [form, setForm] = useState<User>({
     name: '',
     email: '',
@@ -66,6 +71,8 @@ const Register = () => {
 
   const handleSubmit = async () => {
     const user = await dispatch(registerAction(form)).unwrap();
+          ToastAndroid.show("Registred successfully", ToastAndroid.SHORT)
+    
     if (user) {
       router.push('/auth/login');
     }
@@ -185,7 +192,16 @@ const Register = () => {
                   end={{ x: 1, y: 0 }}
                   style={styles.buttonGradient}
                 >
-                  <Text style={styles.buttonText}>Create Account</Text>
+                 <Text style={styles.buttonText}>
+                  {isLoading ? (
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <Text>Registering</Text>
+                      <ActivityIndicator color={COLORS.primary} size={"large"} style={{ marginLeft: 10 }} />
+                    </View>
+                  ) : (
+                    "Login"
+                  )}
+                </Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
