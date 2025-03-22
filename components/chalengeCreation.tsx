@@ -10,7 +10,8 @@ import {
   ScrollView,
   useColorScheme,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  ToastAndroid
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, Colors } from '@/constants/Colors';
@@ -67,6 +68,7 @@ const ChallengeCreation: React.FC<ChallengeCreationProps> = ({ visible, onClose 
   
   const handleCreate = () => {   
     dispatch(createChalengeAction(formData));
+      ToastAndroid.show("challenge created successfully", ToastAndroid.SHORT)
 
     setFormData({
       title: '',
