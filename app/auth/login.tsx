@@ -12,6 +12,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ToastAndroid,
+  ActivityIndicator,
 } from 'react-native';
 import { loginAction } from '../(redux)/aithSlice';
 import { COLORS, Colors } from '@/constants/Colors';
@@ -19,6 +21,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
+import { RootState } from '../(redux)/store';
 
 const LoginScreen = () => {
   const router = useRouter();
@@ -30,6 +34,8 @@ const LoginScreen = () => {
     email: '',
     password: '',
   });
+
+  const {isLoading} = useSelector((state: RootState) => state.auth);
   
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   
@@ -44,6 +50,9 @@ const LoginScreen = () => {
       if (loginAction.rejected.match(response)) {
         setErrorMessage((response.payload as string) || "Login failed. Please try again.");
         return;
+      }else{
+        ToastAndroid.show("Loged in successfully", ToastAndroid.SHORT)
+
       }
   
       router.push("/(tabs)");
@@ -128,7 +137,18 @@ const LoginScreen = () => {
                   end={{ x: 1, y: 0 }}
                   style={styles.buttonGradient}
                 >
-                  <Text style={styles.buttonText}>Login</Text>
+                  <Text style={styles.buttonText}>
+                    {isLoading ? (
+                       <View style={{ flexDirection: "row", alignItems: "center" }}>
+                            <Text>Logining</Text>
+                            <ActivityIndicator color={COLORS.primary} size={"large"} />
+                       </View>
+                     
+                    ) : (
+                      "Login"
+                    )}
+                  </Text>
+                 
                 </LinearGradient>
               </TouchableOpacity>
               
