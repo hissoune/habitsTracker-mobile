@@ -59,6 +59,7 @@ const initialState:{
     habit:Habit|null,
     progress:progress|null
     isLoading:boolean,
+    createOrUbdateLoading:boolean
     error:string| null
     
 }={
@@ -66,6 +67,7 @@ const initialState:{
     habit:null,
     progress:null,
     isLoading:false,
+    createOrUbdateLoading:false,
     error:null
 }
 
@@ -73,15 +75,10 @@ const habitSlice = createSlice({
     name: 'habits',
     initialState,
     reducers:{
-        updateScheduledHabits:(state,action)=>{
-            
-             state.habits = state.habits.map((habit)=>
+        updateScheduledHabits:(state,action)=>{ 
+                state.habits = state.habits.map((habit)=>
                 habit._id == action.payload.habit._id ?action.payload.habit:habit
-             )
-          
-          
-            
-             
+             )  
         },
        
     },
@@ -100,11 +97,11 @@ const habitSlice = createSlice({
 
         })
         .addCase(createHabitAction.pending, (state)=>{
-            state.isLoading =true
+            state.createOrUbdateLoading =true
         })
         .addCase(createHabitAction.fulfilled, (state,action)=>{
             state.habits.push(action.payload)
-            state.isLoading =false
+            state.createOrUbdateLoading =false
         })
         .addCase(createHabitAction.rejected, (state)=>{
             state.error = 'fzancjk'

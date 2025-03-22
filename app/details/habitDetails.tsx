@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import {  useEffect, useRef, useState } from "react"
 import {
   View,
   Text,
@@ -17,51 +17,32 @@ import type { RootState } from "../(redux)/store"
 import { COLORS } from "@/constants/Colors"
 import { LineChart } from "react-native-chart-kit"
 import { LinearGradient } from "expo-linear-gradient"
-import { CircularProgress } from "../(tabs)/MyHabits"
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router"
+import {  useLocalSearchParams } from "expo-router"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
 import {
   completProgressAction,
   getProgressAction,
   reactiveHabitAction,
 } from "../(redux)/hapitSlice"
+import { CircularProgress } from "../../components/CircularProgress"
+import { getFrequencyText, getStatusBgColor, getStatusColor } from "../helpers/habitHelper"
+import StatCard from "@/components/StatCard"
+import RepeatsArray from '../../components/repeatsArray';
 
-const { width } = Dimensions.get("window")
 
-const StatCard = ({ title, value, icon, color }: { title: string; value: number; icon: any; color: string }) => {
-  const colorScheme = useColorScheme()
-  const isDark = colorScheme === "dark"
 
-  return (
-    <View style={[styles.statCard, isDark && styles.statCardDark]}>
-      <LinearGradient
-        colors={isDark ? [`${color}20`, `05`] : [`${color}15`, `${color}05`]}
-        style={styles.statGradient}
-      >
-        <View style={[styles.iconContainer, { backgroundColor: isDark ? `${color}30` : `${color}20` }]}>{icon}</View>
-        <Text style={[styles.statValue, { color: isDark ? "#fff" : "#1f2937" }]}>{value}</Text>
-        <Text style={[styles.statTitle, { color: isDark ? "#9ca3af" : "#6b7280" }]}>{title}</Text>
-      </LinearGradient>
-    </View>
-  )
-}
 
 const HabitDetails = () => {
   const { habitId } = useLocalSearchParams()
   const { habits, isLoading, progress } = useSelector((state: RootState) => state.habit)
+
   const [habit, setHabit] = useState(habits.find((h) => h._id === habitId))
   const colorScheme = useColorScheme()
   const isDark = colorScheme === "dark"
   const dispatch = useAppDispatch()
-  const isMounted = useRef(true)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const router = useRouter()
 
-  useEffect(() => {
-    return () => {
-      isMounted.current = false
-    }
-  }, [])
+
 
   useEffect(()=> {
     const currentHabit = habits.find((h) => h._id === habitId);
@@ -101,56 +82,9 @@ const HabitDetails = () => {
     )
   }
 
-  const repeatsArray = Array.from({ length: habit.repeats }, (_, i) => i + 1)
+  
 
-  const chartData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    datasets: [
-      {
-        data: [65, 80, 75, 90, 85, 95, 88],
-        color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
-        strokeWidth: 2,
-      },
-    ],
-  }
-
-  const getStatusBgColor = (status: string) => {
-    if (isDark) {
-      switch (status.toLowerCase()) {
-        case "active":
-          return "rgba(99, 102, 241, 0.2)"
-        case "completed":
-          return "rgba(34, 197, 94, 0.2)"
-        case "failed":
-          return "rgba(239, 68, 68, 0.2)"
-        default:
-          return "rgba(107, 114, 128, 0.2)"
-      }
-    }
-    switch (status.toLowerCase()) {
-      case "active":
-        return "#e2e8ff"
-      case "completed":
-        return "#dcfce7"
-      case "failed":
-        return "#fee2e2"
-      default:
-        return "#f3f4f6"
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return "#6366f1"
-      case "completed":
-        return "#22c55e"
-      case "failed":
-        return "#ef4444"
-      default:
-        return "#6b7280"
-    }
-  }
+  
 
   const handleReactiveHabit = async () => {
    
@@ -175,18 +109,7 @@ const HabitDetails = () => {
     }
   }
 
-  const getFrequencyText = (frequency: string) => {
-    switch (frequency.toLowerCase()) {
-      case "daily":
-        return "Day"
-      case "weekly":
-        return "Week"
-      case "monthly":
-        return "Month"
-      default:
-        return "Period"
-    }
-  }
+
 
   return (
     <ScrollView
@@ -201,7 +124,8 @@ const HabitDetails = () => {
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <Text style={[styles.title, isDark && styles.titleDark]}>{habit.title}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: habit.status ? getStatusBgColor(habit.status) : "#f3f4f6" }]}>
+           
+            <View style={[styles.statusBadge, { backgroundColor: habit.status ? getStatusBgColor(habit.status,isDark) : "#f3f4f6" }]}>
               <Text style={[styles.statusText, { color: getStatusColor(habit.status || "unknown") }]}>{habit.status || "unknown"}</Text>
             </View>
           </View>
@@ -220,7 +144,7 @@ const HabitDetails = () => {
             <CircularProgress progress={habit.progress || 0} size={80} habitStatus={habit.status} />
             <View style={styles.progressInfo}>
               <Text style={[styles.progressPercentage, isDark && styles.progressPercentageDark]}>
-                {Math.round((habit.progress || 0) * 100)}% Complete
+                {Math.round((habit.progress || 0))}% Complete
               </Text>
               <Text
                 style={[
@@ -259,58 +183,7 @@ const HabitDetails = () => {
         />
       </View>
 
-      <View style={[styles.chartSection, isDark && styles.chartSectionDark]}>
-        <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>{habit.frequency} Progress</Text>
-        <LineChart
-          data={chartData}
-          width={width - 32}
-          height={220}
-          chartConfig={{
-            backgroundColor: isDark ? "#000" : "#fff",
-            backgroundGradientFrom: isDark ? "#000" : "#fff",
-            backgroundGradientTo: isDark ? "#000" : "#fff",
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
-            labelColor: () => (isDark ? "#fff" : "#1f2937"),
-            style: {
-              borderRadius: 16,
-            },
-            propsForDots: {
-              r: "6",
-              strokeWidth: "2",
-              stroke: COLORS.primary,
-            },
-          }}
-          bezier
-          style={styles.chart}
-          withInnerLines={false}
-          withOuterLines={false}
-        />
-      </View>
-
-      <View style={[styles.streakSection, isDark && styles.streakSectionDark]}>
-        <View style={styles.streakHeader}>
-          <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Current Streak</Text>
-          <View style={[styles.streakBadge, isDark && styles.streakBadgeDark]}>
-            <Feather name="zap" size={20} color="#f59e0b" />
-            <Text style={styles.streakText}>{progress?.streak || habit.sucsess} Days</Text>
-          </View>
-        </View>
-        <View style={styles.streakDays}>
-          {repeatsArray.map((day) => (
-            <View
-              key={day}
-              style={[
-                styles.dayDot,
-                {
-                  backgroundColor:
-                  progress?  (progress?.streak && day <= progress.streak ? COLORS.primary:isDark?"#333":'#f59e0b') :habit.sucsess && day <= habit.sucsess ? COLORS.primary  : "#333",
-                },
-              ]}
-            />
-          ))}
-        </View>
-      </View>
+    <RepeatsArray habit={habit} progress={progress} isDark={isDark} />
 
       <TouchableOpacity
         style={[
@@ -470,37 +343,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     gap: 12,
   },
-  statCard: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  statCardDark: {
-    backgroundColor: "#1a1a1a",
-  },
-  statGradient: {
-    padding: 16,
-    borderRadius: 16,
-    alignItems: "center",
-  },
-  iconContainer: {
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginVertical: 4,
-  },
-  statTitle: {
-    fontSize: 12,
-  },
+  
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
@@ -510,73 +353,7 @@ const styles = StyleSheet.create({
   sectionTitleDark: {
     color: "#fff",
   },
-  chartSection: {
-    padding: 16,
-    marginTop: 20,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    margin: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  chartSectionDark: {
-    backgroundColor: "#1a1a1a",
-    
-  },
-  chart: {
-    marginVertical: 8,
-    borderRadius: 16,
-  },
-  streakSection: {
-    padding: 16,
-    marginTop: 4,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    margin: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  streakSectionDark: {
-    backgroundColor: "#1a1a1a",
-  },
-  streakHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  streakBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fef3c7",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  streakBadgeDark: {
-    backgroundColor: "#78350f",
-  },
-  streakText: {
-    marginLeft: 4,
-    color: "#f59e0b",
-    fontWeight: "600",
-  },
-  streakDays: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  dayDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
+ 
   actionButton: {
     margin: 16,
     backgroundColor: COLORS.primary,

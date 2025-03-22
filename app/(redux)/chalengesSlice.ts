@@ -3,7 +3,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { chalenge, chalengeProgress } from '../../constants/types';
 import { createChalenge, deleteChalenge, getAllChalenges, joinChalenge, updateChalenge } from '../(services)/apis/chalengesApi';
 import { compleeteProgress, getParticipantProgress } from '../(services)/apis/chalengeProgress';
-import { act } from 'react';
 
 
 export const getAllChalengesAction = createAsyncThunk(
@@ -86,7 +85,8 @@ const chalengesSlice = createSlice({
     initialState,
     reducers:{
         updateRealTimechalenges:(state,action)=>{
-            state.chalenges = state.chalenges.map((chalenge)=> chalenge._id == action.payload._id ? action.payload : chalenge )
+           state.isLoading = false
+           state.chalenges = state.chalenges.map((chalenge)=> chalenge._id == action.payload._id ? action.payload : chalenge )
         }
     },
     extraReducers:(builder)=>{

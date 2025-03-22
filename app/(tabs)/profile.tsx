@@ -28,7 +28,7 @@ const Profile = () => {
       await dispatch(logoutAction(user?._id))
 
     }
-    router.push('../')
+    router.push('/auth/login')
   }
   
   if (!user) {
@@ -46,7 +46,7 @@ const Profile = () => {
     datasets: [
       {
         data: [5, 7, 6, 8, 4, 6, 7],
-        color: (opacity = 1) => `rgba(78, 205, 196, ${opacity})`, // COLORS.primary with opacity
+        color: (opacity = 1) => `rgba(78, 205, 196, ${opacity})`, 
       },
     ],
   }

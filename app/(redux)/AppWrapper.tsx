@@ -18,6 +18,14 @@ const AppWrapper = () => {
   const dispatch = useAppDispatch();
   const habitssocket = io(process.env.EXPO_PUBLIC_HABITS);
   const chalengesSocket = io(process.env.EXPO_PUBLIC_CHALENGES)
+
+  useEffect(() => {
+
+    dispatch(loadUser())
+    
+
+  }, [dispatch]);
+  
   const {user}=useSelector((state:RootState)=>state.auth)
 
   Notifications.setNotificationHandler({
@@ -63,33 +71,8 @@ const AppWrapper = () => {
 
 
 
-  useEffect(() => {
-
-    dispatch(loadUser())
-    
-
-  }, [dispatch]);
-
-  
 
 
-
-
-
-
-// useEffect(() => {
-//   const subscription = Notifications.addNotificationReceivedListener(notification => {
-//     // console.log('📩 Expo Notification received:', notification);
-//     // Alert.alert(
-//     //   notification.request.content.title ?? 'No Title',
-//     //   notification.request.content.body ?? 'No Content'
-//     // );
-//   });
-
-//   return () => {
-//     subscription.remove(); 
-//   };
-// }, []);
 
   return (
     <Stack>
