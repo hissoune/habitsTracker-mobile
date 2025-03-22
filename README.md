@@ -8,7 +8,7 @@ MyHabit is a platform designed to help individuals form better habits through ac
 
 1. **Habit Creation and Tracking**
    - Set personal habits (e.g., "Drink 2L of water daily" or "Code for 2 hours").
-   - Receive daily reminders via push notifications.
+   - Receive daily or weekly or monthly  reminders via push notifications.
 
 2. **Team Challenges**
    - Create or join group challenges (e.g., "30-day fitness challenge").
@@ -18,16 +18,10 @@ MyHabit is a platform designed to help individuals form better habits through ac
    - Pair up with another user for mutual accountability.
    - In-app chat for sharing progress updates.
 
-4. **Gamification**
-   - Earn points, badges, and streaks for completing habits or winning challenges.
-   - Unlock rewards like custom habit themes or exclusive challenges.
 
 5. **Analytics and Insights**
    - Weekly and monthly reports showing habit progress and consistency.
 
-6. **Public and Private Goals**
-   - Set habits as public to inspire others or private for personal tracking.
-   - Share progress with social media integration.
 
 7. **Multi-Device Syncing**
    - Sync habit progress across web and mobile.
@@ -61,7 +55,7 @@ MyHabit is a platform designed to help individuals form better habits through ac
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/your-username/myhabit-mobile.git
+git clone https://github.com/hissoune/habitsTracker-mobile.git
 cd myhabit-mobile
 ```
 
@@ -74,9 +68,16 @@ npm install
 Create a `.env` file in the root directory and add the following:
 
 ```
-API_URL=https://your-api-endpoint.com
-SOCKET_URL=https://your-socket-endpoint.com
-EXPO_PUSH_API=https://exp.host/--/api/v2/push/send
+EXPO_PUBLIC_URL=http://your machine host:5000/
+EXPO_PUBLIC_UPLOAD=http://your machine host:4000
+
+EXPO_PUBLIC_REPLACE=your machine host
+
+EXPO_PUBLIC_HABITS = http://your machine host:3001
+EXPO_PUBLIC_CHALENGES = http://your machine host:3003
+EXPO_PUBLIC_NOTIFICATIONS = http://your machine host:3006
+
+EXPO_PUBLIC_PROJECT_ID=your eas project
 ```
 
 ### Step 4: Start the Expo Development Server
@@ -98,14 +99,14 @@ npx expo start
 ```
 myhabit-mobile/
 ├── assets/                # Static assets (icons, images)
-├── src/
-│   ├── components/       # Reusable UI components
-│   ├── screens/          # Application screens
-│   ├── navigation/       # App navigation (React Navigation setup)
-│   ├── store/            # Redux state management
-│   ├── services/         # API and socket integration
-│   └── utils/            # Utility functions
-├── App.js                # Root component
+|── components/       # Reusable UI components
+├── app/
+│   ├── (redux)/          # Redux state management
+│   ├── (services)/       # API and socket integration
+│   ├── (tabs)/           # application tabs
+│   └── auth/             # the auth pages
+│   └── details/          # the details components
+├── index.tsx             # Root component
 ├── .env                  # Environment variables
 └── package.json          # Dependencies and scripts
 ```
@@ -124,7 +125,7 @@ myhabit-mobile/
 ## 🔍 API Integration
 Ensure your backend is running and properly connected:
 
-1. User Authentication (JWT-based)
+1. User Authentication 
 2. Habit Management (Create, Update, Delete)
 3. Challenge Participation and Leaderboard
 4. Real-time Notifications (via Socket.IO)
@@ -139,7 +140,7 @@ Ensure your backend is running and properly connected:
 ---
 
 ## 📧 Support
-For issues or feature requests, please open an [issue](https://github.com/your-username/myhabit-mobile/issues) or contact `support@myhabit.com`.
+For issues or feature requests, please open an [issue](https://github.com/hissoune/myhabit-mobile) or contact `khalidhissoune962@gmail.com`.
 
 ---
 
