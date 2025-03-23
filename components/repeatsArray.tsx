@@ -27,11 +27,11 @@ const repeatsArray = Array.from({ length: habit.repeats }, (_, i) => i + 1)
 
     return (
         <View>
-              <View style={[styles.chartSection, isDark && styles.chartSectionDark]}>
+        <View style={[styles.chartSection, isDark && styles.chartSectionDark]}>
         <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>{habit.frequency} Progress</Text>
         <LineChart
           data={chartData}
-          width={width - 32}
+          width={width - 30}
           height={220}
           chartConfig={{
             backgroundColor: isDark ? "#000" : "#fff",
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
         color: "#fff",
       },
     chartSection: {
-        padding: 16,
+        padding: 5,
         marginTop: 20,
         backgroundColor: "#fff",
         borderRadius: 16,
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
         
       },
       chart: {
-        marginVertical: 8,
+        marginVertical: 5,
         borderRadius: 16,
       },
       streakSection: {

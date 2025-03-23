@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Modal,
   View,
@@ -21,18 +21,25 @@ import { Picker } from "@react-native-picker/picker"
 import DateTimePicker from "@react-native-community/datetimepicker"
 import type { Habit, Frequency } from "@/constants/types"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
-import { createHabitAction } from "@/app/(redux)/hapitSlice"
+import { createHabitAction, updateHabitAction } from "@/app/(redux)/hapitSlice"
 import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons"
 import { COLORS, Colors } from "@/constants/Colors"
 import { LinearGradient } from "expo-linear-gradient"
 import { useSelector } from "react-redux"
 import { RootState } from "@/app/(redux)/store"
 
-const HabitCreationModal: React.FC<{ visible: boolean; onClose: () => void }> = ({ visible, onClose }) => {
+interface HabitCreationModalProps {
+  visible: boolean;
+  onClose: () => void;
+  habit?: Habit; 
+}
+
+const HabitCreationModal: React.FC<HabitCreationModalProps> = ({ visible, onClose, habit }) => {
   const dispatch = useAppDispatch()
   const colorScheme = useColorScheme() || "light"
   const colors = Colors[colorScheme]
-const {createOrUbdateLoading}=useSelector((state:RootState)=>state.habit)
+  const { createOrUbdateLoading } = useSelector((state: RootState) => state.habit)
+  
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -42,31 +49,61 @@ const {createOrUbdateLoading}=useSelector((state:RootState)=>state.habit)
   })
 
   const [showTimePicker, setShowTimePicker] = useState(false)
+  const isEditMode = !!habit 
 
- 
+  useEffect(() => {
+    if (habit) {
+      setForm({
+        title: habit.title,
+        description: habit.description || "",
+        frequency: habit.frequency,
+        reminderTime: habit.reminderTime ? new Date(habit.reminderTime) : new Date(),
+        repeats: habit.repeats,
+      })
+    } else {
+      setForm({
+        title: "",
+        description: "",
+        frequency: "daily" as Frequency,
+        reminderTime: new Date(),
+        repeats: 0,
+      })
+    }
+  }, [habit, visible])
 
-  const handleCreateHabit = async () => {
+  const handleSubmit = async () => {
     try {
-      console.log("Creating habit...")
-
-      const newHabit: Habit = {
-        ...form,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      if (isEditMode && habit) {
+        const updatedHabit: Habit = {
+          ...habit,
+          ...form,
+          updatedAt: new Date(),
+        }
+        if (habit?._id) {
+          const response = await dispatch(updateHabitAction({ habitId: habit?._id , habit: updatedHabit }))
+          if (updateHabitAction.fulfilled.match(response)) {
+            console.log("Habit updated successfully")
+            ToastAndroid.show("Habit updated successfully", ToastAndroid.SHORT)
+          }
+        }
+       
+      } else {
+        const newHabit: Habit = {
+          ...form,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+        
+        const response = await dispatch(createHabitAction(newHabit))
+        if (createHabitAction.fulfilled.match(response)) {
+          console.log("Habit created successfully")
+          ToastAndroid.show("Habit created successfully", ToastAndroid.SHORT)
+        }
       }
-
-      const response = await dispatch(createHabitAction(newHabit))
-      console.log("Habit created successfully") 
-      if (createHabitAction.fulfilled.match(response)) {
-        console.log("Habit created successfully")
-              ToastAndroid.show("Habit created successfully", ToastAndroid.SHORT)
-
-      }
-     onClose()
+      onClose()
     } catch (error) {
-      console.error("Error creating habit:", error)
-
-      Alert.alert("Error", "There was an error creating your habit", [{ text: "OK" }])
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} habit:`, error)
+      Alert.alert("Error", `There was an error ${isEditMode ? 'updating' : 'creating'} your habit`, [{ text: "OK" }])
     }
   }
 
@@ -104,7 +141,7 @@ const {createOrUbdateLoading}=useSelector((state:RootState)=>state.habit)
                 end={{ x: 1, y: 0 }}
                 style={styles.headerGradient}
               >
-                <Text style={styles.header}>Create New Habit</Text>
+                <Text style={styles.header}>{isEditMode ? 'Edit Habit' : 'Create New Habit'}</Text>
                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                   <AntDesign name="close" size={24} color="#fff" />
                 </TouchableOpacity>
@@ -200,8 +237,6 @@ const {createOrUbdateLoading}=useSelector((state:RootState)=>state.habit)
               {showTimePicker && (
                 <DateTimePicker value={form.reminderTime} mode="time" display="default" onChange={onTimeChange} />
               )}
-
-             
             </ScrollView>
 
             <View style={styles.buttonContainer}>
@@ -216,7 +251,7 @@ const {createOrUbdateLoading}=useSelector((state:RootState)=>state.habit)
                 <Text style={[styles.buttonText, styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.button, styles.createButton]} onPress={handleCreateHabit}>
+              <TouchableOpacity style={[styles.button, styles.createButton]} onPress={handleSubmit}>
                 <LinearGradient
                   colors={[COLORS.primary, COLORS.secondary]}
                   start={{ x: 0, y: 0 }}
@@ -225,14 +260,16 @@ const {createOrUbdateLoading}=useSelector((state:RootState)=>state.habit)
                 >
                   <Text style={styles.createButtonText}>
                     {createOrUbdateLoading ? (
-                       <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          <Text>Creating</Text>
-                            <ActivityIndicator color={COLORS.primary} size={"large"} />
-                        </View>
-                                       
-                     ) : (
-                     "Create Habit"
-                    )}</Text>
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Text style={{ color: "#fff", marginRight: 10 }}>
+                          {isEditMode ? 'Updating' : 'Creating'}
+                        </Text>
+                        <ActivityIndicator color="#fff" size="small" />
+                      </View>
+                    ) : (
+                      isEditMode ? 'Update Habit' : 'Create Habit'
+                    )}
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -394,4 +431,3 @@ const styles = StyleSheet.create({
 })
 
 export default HabitCreationModal
-

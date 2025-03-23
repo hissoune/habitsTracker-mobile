@@ -2,7 +2,7 @@ import { CircularProgress } from "@/components/CircularProgress"
 import { getStatusBgColor, getStatusColor } from "@/app/helpers/habitHelper"
 import { COLORS } from "@/constants/Colors"
 import { Habit } from "@/constants/types"
-import { Entypo, FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons"
+import { Entypo, FontAwesome5, Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
 import { StyleSheet, Text, TouchableOpacity, useColorScheme, View } from "react-native"
 
@@ -45,6 +45,7 @@ const HabitCard = ({ habit }:{habit:Habit}) => {
             <Text style={[styles.statValue, isDark && styles.statValueDark]}>{habit.repeats}</Text>
           </View>
   
+          
           <View style={styles.statsRight}>
             <View style={[styles.statBadge, isDark && styles.statBadgeDark]}>
               <Text style={[styles.statValue, isDark && styles.statValueDark]}>{habit.sucsess}</Text>
