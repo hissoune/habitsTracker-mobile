@@ -20,11 +20,12 @@ import type { RootState } from "../(redux)/store"
 import { LinearGradient } from "expo-linear-gradient"
 import { COLORS, Colors } from "@/constants/Colors"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
-import { compleeteProgressAction, getParticipantProgressAction, joinChalengeAction, updateChalengeActon } from "../(redux)/chalengesSlice"
+import { compleeteProgressAction, deleteChalengeAction, getParticipantProgressAction, joinChalengeAction, updateChalengeActon } from "../(redux)/chalengesSlice"
 import { chalenge, User } from "@/constants/types"
 import React from "react"
 import RenderParticipant from "../../components/renderParticipants"
 import UsersSelector from "@/components/usersSelector"
+import ChallengeCreation from "@/components/chalengeCreation"
 
 
 
@@ -41,7 +42,8 @@ const ChallengeDetails = () => {
   const [isUserSelector,setIsUserSelector]=useState(false)
   const colorScheme = useColorScheme() || 'light'
   const colors = Colors[colorScheme]
-  
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
   const scaleAnim = useState(new Animated.Value(1))[0]
 
   const currentUserId = user?._id
@@ -102,6 +104,18 @@ const handelAddParticipants =  (participants:any)=>{
     }
     
     console.log("Marked as completed")
+  }
+
+  const handelDeleteChallenge =()=>{
+    try {
+    if (challenge?._id) {
+      dispatch(deleteChalengeAction( challenge?._id));
+      router.push('/(tabs)/chalenges')
+
+    }
+  } catch (error) {
+    console.error("Failed to delete chalenge:", error) 
+  }
   }
 
   const calculateDaysLeft = () => {
@@ -166,15 +180,33 @@ const handelAddParticipants =  (participants:any)=>{
               }]}>
                 <FontAwesome name="calendar" size={20} color={colors.icon} />
                 <Text style={[styles.statText, { color: colors.text }]}>{challenge.frequency.charAt(0).toUpperCase() + challenge.frequency.slice(1)} </Text>
-                        </View>
+              </View>
               <View style={[styles.statItem, { 
                 backgroundColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)' 
               }]}>
                 <Ionicons name="repeat" size={24} color={COLORS.primary} />
                 <Text style={[styles.statText, { color: colors.text }]}>{challenge.repeats}</Text>
               </View>
-           
+             
+              <View style={[styles.statItem,user?._id === challenge.creator?._id ?'':{display:'none'}, { 
+                backgroundColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)' 
+              }]}>
+                  <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+                    <MaterialCommunityIcons name="update" size={28} color="#22c55e" />
+                  </TouchableOpacity>
+                  <ChallengeCreation visible={isModalVisible} onClose={() => setIsModalVisible(false)} challenge={challenge} />
+                </View>
+                <View style={[styles.statItem,user?._id === challenge.creator?._id ?'':{display:'none'},{ 
+                backgroundColor: colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)' 
+              }]}>
+                  <TouchableOpacity onPress={() => handelDeleteChallenge()}>
+                    <MaterialCommunityIcons name="archive-remove" size={28} color="red" />
+                  </TouchableOpacity>
+                </View>
             </View>
+            <View >
+          
+           </View>
           </View>
 
           <View style={[styles.card, { 
@@ -393,7 +425,7 @@ const styles = StyleSheet.create({
   statItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 20,
+    marginRight: 10,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
