@@ -182,15 +182,15 @@ const habitSlice = createSlice({
             state.error = 'no dont '
         })
         .addCase(updateHabitAction.pending, (state)=>{
-            state.isLoading = true
+            state.createOrUbdateLoading = true
         })
         .addCase(updateHabitAction.fulfilled, (state,action)=>{
             state.habits = state.habits.map((habit)=> habit._id == action.payload._id?action.payload:habit);
-            state.isLoading = false
+            state.createOrUbdateLoading = false
 
         })
         .addCase(updateHabitAction.rejected, (state)=>{
-            state.isLoading = false
+            state.createOrUbdateLoading = false
             state.error = 'no dont '
         })
         
