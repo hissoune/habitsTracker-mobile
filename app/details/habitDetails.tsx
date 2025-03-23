@@ -11,16 +11,17 @@ import {
   ActivityIndicator,
   useColorScheme,
 } from "react-native"
-import { MaterialIcons, Ionicons, Entypo, FontAwesome5, Feather } from "@expo/vector-icons"
+import { MaterialIcons, Ionicons, Entypo, FontAwesome5, Feather, MaterialCommunityIcons } from "@expo/vector-icons"
 import { useSelector } from "react-redux"
 import type { RootState } from "../(redux)/store"
 import { COLORS } from "@/constants/Colors"
 import { LineChart } from "react-native-chart-kit"
 import { LinearGradient } from "expo-linear-gradient"
-import {  useLocalSearchParams } from "expo-router"
+import {  router, useLocalSearchParams } from "expo-router"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
 import {
   completProgressAction,
+  deleteHabitAction,
   getProgressAction,
   reactiveHabitAction,
 } from "../(redux)/hapitSlice"
@@ -28,6 +29,7 @@ import { CircularProgress } from "../../components/CircularProgress"
 import { getFrequencyText, getStatusBgColor, getStatusColor } from "../helpers/habitHelper"
 import StatCard from "@/components/StatCard"
 import RepeatsArray from '../../components/repeatsArray';
+import HabitCreationModal from "@/components/habitCreation"
 
 
 
@@ -42,7 +44,7 @@ const HabitDetails = () => {
   const dispatch = useAppDispatch()
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(()=> {
     const currentHabit = habits.find((h) => h._id === habitId);
@@ -87,8 +89,6 @@ const HabitDetails = () => {
   
 
   const handleReactiveHabit = async () => {
-   
-
     try {
       if (habit._id) {
         await dispatch(reactiveHabitAction(habit._id))
@@ -99,7 +99,6 @@ const HabitDetails = () => {
   }
 
   const handleCompleteProgress = async () => {
-  
     try {
       if (progress?._id) {
         await dispatch(completProgressAction(progress._id))
@@ -108,6 +107,16 @@ const HabitDetails = () => {
       console.error("Failed to complete progress:", error)
     }
   }
+
+  const handeldeleteHabit = async () => {
+    try {
+      if (habit._id) {
+        await dispatch(deleteHabitAction(habit._id))
+        router.push('/(tabs)/MyHabits')
+      }
+    } catch (error) {
+      console.error("Failed to delete habit:", error) 
+    }}
 
 
 
@@ -136,6 +145,22 @@ const HabitDetails = () => {
               {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)}
             </Text>
           </View>
+          <View style={[styles.frequencyContainer , {padding:10,flexDirection:'row',justifyContent:'space-between'}]}>
+
+          <View style={styles.frequencyContainer}>
+            <TouchableOpacity onPress={()=>setIsModalVisible(true)}>
+            <MaterialCommunityIcons name="update" size={28} color="#22c55e" />
+            </TouchableOpacity>
+            <HabitCreationModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} habit={habit}/>
+
+          </View>
+          <View style={styles.frequencyContainer}>
+          <TouchableOpacity onPress={()=>{handeldeleteHabit()}}>
+          <MaterialCommunityIcons name="archive-remove" size={28} color="red" />
+          </TouchableOpacity>
+          </View>
+          </View>
+          
         </View>
 
         <View style={styles.progressSection}>
