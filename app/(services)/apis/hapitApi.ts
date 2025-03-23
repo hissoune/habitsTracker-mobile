@@ -25,3 +25,13 @@ export const reactiveHabit = async (habitId:string) =>{
     
     return response.data
 }
+
+export const deleteHabit = async(habitId:string)=>{
+  const response = await axiosInstance.delete(`habits-service/habits/${habitId}`);
+  return response.data
+}
+
+export const updateHabit = async (habitId:string,habit:Partial<Habit>) =>{
+  const response = await axiosInstance.patch(`habits-service/habits/updatehabit/${habitId}`,habit);
+  return response.data
+}
