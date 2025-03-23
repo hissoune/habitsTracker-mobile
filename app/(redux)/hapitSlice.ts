@@ -1,6 +1,6 @@
 import { Habit, progress } from '@/constants/types';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { createHabit, getAllHabits, getHabitById, reactiveHabit } from '../(services)/apis/hapitApi';
+import { createHabit, deleteHabit, getAllHabits, getHabitById, reactiveHabit, updateHabit } from '../(services)/apis/hapitApi';
 import { getProgress, completProgress } from '../(services)/apis/progress.api';
 import { Frequency } from '../../constants/types';
 
@@ -51,6 +51,22 @@ export const completProgressAction=createAsyncThunk(
     async (progressId:string)=>{
         const progress = await completProgress(progressId);
         return progress;
+    }
+);
+
+export const deleteHabitAction = createAsyncThunk(
+    "habits/delete",
+    async (habitId:string)=>{
+        const deletedHabit = await deleteHabit(habitId)
+        return deletedHabit
+    }
+);
+
+export const updateHabitAction =createAsyncThunk(
+    "habits/update",
+    async ({ habitId, habit }: { habitId: string; habit: Partial<Habit> }) => {
+     const  constUpdatedHabit = await updateHabit(habitId, habit);
+     return constUpdatedHabit
     }
 );
 
@@ -152,6 +168,30 @@ const habitSlice = createSlice({
             state.error = 'fzancjk'
             state.isLoading =false
 
+        })
+        .addCase(deleteHabitAction.pending, (state)=>{
+            state.isLoading = true
+        })
+        .addCase(deleteHabitAction.fulfilled, (state,action)=>{
+            state.habits = state.habits.filter((habit)=> habit._id != action.payload._id);
+            state.isLoading = false
+
+        })
+        .addCase(deleteHabitAction.rejected, (state)=>{
+            state.isLoading = false
+            state.error = 'no dont '
+        })
+        .addCase(updateHabitAction.pending, (state)=>{
+            state.isLoading = true
+        })
+        .addCase(updateHabitAction.fulfilled, (state,action)=>{
+            state.habits = state.habits.map((habit)=> habit._id == action.payload._id?action.payload:habit);
+            state.isLoading = false
+
+        })
+        .addCase(updateHabitAction.rejected, (state)=>{
+            state.isLoading = false
+            state.error = 'no dont '
         })
         
     }
