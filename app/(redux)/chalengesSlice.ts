@@ -69,6 +69,7 @@ const initialState :{
  chalenge:chalenge | null,
  progress:chalengeProgress|null
  isLoading:boolean,
+ createOrUpdateLoading:boolean,
  error:string
 
 }={
@@ -76,6 +77,7 @@ const initialState :{
     chalenge:null,
     progress:null,
     isLoading:false,
+    createOrUpdateLoading:false,
     error:''
 
 }
@@ -85,14 +87,13 @@ const chalengesSlice = createSlice({
     initialState,
     reducers:{
         updateRealTimechalenges:(state,action)=>{
-           state.isLoading = false
            state.chalenges = state.chalenges.map((chalenge)=> chalenge._id == action.payload._id ? action.payload : chalenge )
         }
     },
     extraReducers:(builder)=>{
        builder
        .addCase(getAllChalengesAction.pending, (state,action)=>{
-        state.isLoading = true
+        state.isLoading = false
        })
        .addCase(getAllChalengesAction.fulfilled,(state,action)=>{
         state.chalenges = action.payload
@@ -114,29 +115,29 @@ const chalengesSlice = createSlice({
           state.error = "sdfghjk"
        })
        .addCase(createChalengeAction.pending, (state)=>{
-        state.isLoading = true;
+        state.createOrUpdateLoading = true;
        })
        .addCase(createChalengeAction.fulfilled, (state,action)=>{
           state.chalenges.push(action.payload);
-          state.isLoading = false;
+          state.createOrUpdateLoading = false;
          
        })
        .addCase(createChalengeAction.rejected, (state)=>{
         state.error = "gvjhbjklm";
-        state.isLoading = false;
+        state.createOrUpdateLoading = false;
 
        })
        .addCase(updateChalengeActon.pending, (state)=>{
-        state.isLoading = true;
+        state.createOrUpdateLoading = true;
        })
        .addCase(updateChalengeActon.fulfilled, (state,action)=>{
         state.chalenges = state.chalenges.map((chalenge)=> chalenge._id ==action.payload._id? action.payload:chalenge )
-          state.isLoading = false;
+          state.createOrUpdateLoading = false;
          
        })
        .addCase(updateChalengeActon.rejected, (state)=>{
         state.error = "gvjhbjklm";
-        state.isLoading = false;
+        state.createOrUpdateLoading = false;
 
        })
 

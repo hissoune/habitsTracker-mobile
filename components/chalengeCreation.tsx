@@ -1,5 +1,5 @@
 import { chalenge } from '@/constants/types';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -11,25 +11,31 @@ import {
   useColorScheme,
   Platform,
   KeyboardAvoidingView,
-  ToastAndroid
+  ToastAndroid,
+  ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, Colors } from '@/constants/Colors';
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { createChalengeAction } from '@/app/(redux)/chalengesSlice';
+import { createChalengeAction, updateChalengeActon } from '@/app/(redux)/chalengesSlice';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/app/(redux)/store';
 
 type ChallengeCreationProps = {
   visible: boolean;
   onClose: () => void;
-  
+  challenge?: chalenge; // Optional challenge for editing
 };
 
-const ChallengeCreation: React.FC<ChallengeCreationProps> = ({ visible, onClose }) => {
+const ChallengeCreation: React.FC<ChallengeCreationProps> = ({ visible, onClose, challenge }) => {
   const colorScheme = useColorScheme() || 'light';
   const colors = Colors[colorScheme];
-    const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
+  const { createOrUpdateLoading } = useSelector((state: RootState) => state.chalenge);
+  
+  const isEditMode = !!challenge; // Check if we're in edit mode
   
   const [formData, setFormData] = useState<Omit<chalenge, 'id'>>({
     title: '',
@@ -42,6 +48,30 @@ const ChallengeCreation: React.FC<ChallengeCreationProps> = ({ visible, onClose 
   
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  
+  // Update form when challenge prop changes
+  useEffect(() => {
+    if (challenge) {
+      setFormData({
+        title: challenge.title,
+        description: challenge.description,
+        frequency: challenge.frequency,
+        repeats: challenge.repeats,
+        startDate: challenge.startDate,
+        endDate: challenge.endDate,
+      });
+    } else {
+      // Reset form when creating a new challenge
+      setFormData({
+        title: '',
+        description: '',
+        frequency: 'daily',
+        repeats: 1,
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    }
+  }, [challenge, visible]);
   
   const updateFormData = (key: keyof typeof formData, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -66,21 +96,44 @@ const ChallengeCreation: React.FC<ChallengeCreationProps> = ({ visible, onClose 
     }
   };
   
-  const handleCreate = () => {   
-    dispatch(createChalengeAction(formData));
-      ToastAndroid.show("challenge created successfully", ToastAndroid.SHORT)
-
-    setFormData({
-      title: '',
-      description: '',
-      frequency: 'daily',
-      repeats: 0,
-      startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    });
-
-    
-    onClose();
+  const handleSubmit = async () => {
+    try {
+      if (isEditMode && challenge) {
+        // Update existing challenge
+        const updatedChallenge = {
+          ...challenge,
+          ...formData,
+        };
+        if (challenge?._id) {
+          const response = await dispatch(updateChalengeActon({chalengeId:challenge?._id,chalenge:updatedChallenge}));
+        if (updateChalengeActon.fulfilled.match(response)) {
+          ToastAndroid.show("Challenge updated successfully", ToastAndroid.SHORT);
+        }
+        }
+        
+      } else {
+        // Create new challenge
+        const response = await dispatch(createChalengeAction(formData));
+        if (createChalengeAction.fulfilled.match(response)) {
+          ToastAndroid.show("Challenge created successfully", ToastAndroid.SHORT);
+        }
+      }
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        frequency: 'daily',
+        repeats: 1,
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      
+      onClose();
+    } catch (error) {
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} challenge:`, error);
+      ToastAndroid.show(`Error ${isEditMode ? 'updating' : 'creating'} challenge`, ToastAndroid.SHORT);
+    }
   };
   
   const frequencyOptions = ['daily', 'weekly', 'monthly'];
@@ -105,7 +158,9 @@ const ChallengeCreation: React.FC<ChallengeCreationProps> = ({ visible, onClose 
                 end={{ x: 1, y: 0 }}
                 style={styles.headerGradient}
               >
-                <Text style={styles.header}>Create New Challenge</Text>
+                <Text style={styles.header}>
+                  {isEditMode ? 'Edit Challenge' : 'Create New Challenge'}
+                </Text>
                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                   <AntDesign name="close" size={24} color="#fff" />
                 </TouchableOpacity>
@@ -243,7 +298,8 @@ const ChallengeCreation: React.FC<ChallengeCreationProps> = ({ visible, onClose 
               
               <TouchableOpacity 
                 style={[styles.button, styles.createButton]} 
-                onPress={handleCreate}
+                onPress={handleSubmit}
+                disabled={createOrUpdateLoading}
               >
                 <LinearGradient
                   colors={[COLORS.primary, COLORS.secondary]}
@@ -251,7 +307,18 @@ const ChallengeCreation: React.FC<ChallengeCreationProps> = ({ visible, onClose 
                   end={{ x: 1, y: 0 }}
                   style={styles.createButtonGradient}
                 >
-                  <Text style={styles.createButtonText}>Create Challenge</Text>
+                  {createOrUpdateLoading ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={{ color: '#fff', marginRight: 10 }}>
+                        {isEditMode ? 'Updating' : 'Creating'}
+                      </Text>
+                      <ActivityIndicator color="#fff" size="small" />
+                    </View>
+                  ) : (
+                    <Text style={styles.createButtonText}>
+                      {isEditMode ? 'Update Challenge' : 'Create Challenge'}
+                    </Text>
+                  )}
                 </LinearGradient>
               </TouchableOpacity>
             </View>

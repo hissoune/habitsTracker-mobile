@@ -80,6 +80,7 @@ const HabitCreationModal: React.FC<HabitCreationModalProps> = ({ visible, onClos
           updatedAt: new Date(),
         }
         if (habit?._id) {
+          
           const response = await dispatch(updateHabitAction({ habitId: habit?._id , habit: updatedHabit }))
           if (updateHabitAction.fulfilled.match(response)) {
             console.log("Habit updated successfully")

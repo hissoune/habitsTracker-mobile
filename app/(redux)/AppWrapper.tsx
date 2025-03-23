@@ -25,7 +25,7 @@ const AppWrapper = () => {
     
 
   }, [dispatch]);
-  
+
   const {user}=useSelector((state:RootState)=>state.auth)
 
   Notifications.setNotificationHandler({
@@ -48,10 +48,8 @@ const AppWrapper = () => {
     
     });
     chalengesSocket.on('chalengeUpdated', (data)=>{
-             
-      if (data.participants.includes(user?._id) || data.creator._id === user?._id) {
+      
         dispatch(updateRealTimechalenges(data));
-      }
       
     });
 

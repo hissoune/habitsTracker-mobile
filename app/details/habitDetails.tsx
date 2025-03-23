@@ -15,7 +15,6 @@ import { MaterialIcons, Ionicons, Entypo, FontAwesome5, Feather, MaterialCommuni
 import { useSelector } from "react-redux"
 import type { RootState } from "../(redux)/store"
 import { COLORS } from "@/constants/Colors"
-import { LineChart } from "react-native-chart-kit"
 import { LinearGradient } from "expo-linear-gradient"
 import {  router, useLocalSearchParams } from "expo-router"
 import { useAppDispatch } from "@/hooks/useAppDispatch"
@@ -37,6 +36,7 @@ import HabitCreationModal from "@/components/habitCreation"
 const HabitDetails = () => {
   const { habitId } = useLocalSearchParams()
   const { habits, isLoading, progress } = useSelector((state: RootState) => state.habit)
+  const { user } = useSelector((state: RootState) => state.auth)
 
   const [habit, setHabit] = useState(habits.find((h) => h._id === habitId))
   const colorScheme = useColorScheme()
@@ -139,26 +139,29 @@ const HabitDetails = () => {
             </View>
           </View>
 
+
+          <View style={[styles.frequencyContainer ]}>
+            
           <View style={styles.frequencyContainer}>
             <MaterialIcons name="event-repeat" size={20} color={COLORS.primary} />
             <Text style={[styles.frequency, isDark && styles.frequencyDark]}>
               {habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)}
             </Text>
           </View>
-          <View style={[styles.frequencyContainer , {padding:10,flexDirection:'row',justifyContent:'space-between'}]}>
-
-          <View style={styles.frequencyContainer}>
-            <TouchableOpacity onPress={()=>setIsModalVisible(true)}>
-            <MaterialCommunityIcons name="update" size={28} color="#22c55e" />
-            </TouchableOpacity>
-            <HabitCreationModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} habit={habit}/>
-
-          </View>
-          <View style={styles.frequencyContainer}>
-          <TouchableOpacity onPress={()=>{handeldeleteHabit()}}>
-          <MaterialCommunityIcons name="archive-remove" size={28} color="red" />
-          </TouchableOpacity>
-          </View>
+           
+            <View style={[styles.frequencyContainer, isDark && styles.frequencyContainerDark,{marginHorizontal:5} ,user?._id !== habit?.userId && {display:'none'}]}>
+                  <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+                    <MaterialCommunityIcons name="update" size={28} color="#22c55e" />
+                  </TouchableOpacity>
+                  <HabitCreationModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} habit={habit} />
+                </View>
+                <View style={[styles.frequencyContainer, isDark && styles.frequencyContainerDark ,user?._id !== habit?.userId && {display:'none'}]}>
+                  <TouchableOpacity onPress={() => { handeldeleteHabit() }}>
+                    <MaterialCommunityIcons name="archive-remove" size={28} color="red" />
+                  </TouchableOpacity>
+             </View>
+           
+         
           </View>
           
         </View>
@@ -325,6 +328,11 @@ const styles = StyleSheet.create({
   frequencyContainer: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  frequencyContainerDark: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1f2937", // Example dark mode styling
   },
   frequency: {
     marginLeft: 8,
